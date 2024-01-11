@@ -21,74 +21,67 @@
  */
 
 import Vue from 'vue'
+import { defineStore } from 'pinia'
 import { createConfig, deleteConfig, updateConfig } from '../services/appointmentConfigService.js'
 import logger from '../utils/logger.js'
 
-const state = {
-	configs: {},
-}
-
-const mutations = {
-	addInitialConfigs(state, configs) {
-		for (const config of configs) {
-			Vue.set(state.configs, config.id, config)
+export default defineStore('appointmentConfig', {
+	state: () => {
+		return {
+			configs: {},
 		}
 	},
-	updateConfig(state, { config }) {
-		if (!state.configs[config.id]) {
-			return
-		}
+	getters: {
+		allConfigs(state) {
+			return Object.values(state.configs)
+		},
+	},
+	actions: {
+		async updateConfig({ commit }, { config }) {
+			try {
+				const updatedConfig = await updateConfig(config)
+				commit('updateConfig', { config: updatedConfig })
+				return updatedConfig
+			} catch (error) {
+				logger.error('Failed to update config', { error })
+				throw error
+			}
+		},
+		async createConfig({ commit }, { config }) {
+			try {
+				const fullConfig = await createConfig(config)
+				commit('addConfig', { config: fullConfig })
+				return fullConfig
+			} catch (error) {
+				logger.error('Failed to create config', { error })
+				throw error
+			}
+		},
+		async deleteConfig({ commit }, { id }) {
+			try {
+				await deleteConfig(id)
+				commit('deleteConfig', { id })
+			} catch (error) {
+				logger.error('Failed to delete config', { error })
+				throw error
+			}
+		},
+		updateConfigMutation(config) {
+			if (!this.configs[config.id]) {
+				return
+			}
 
-		Vue.set(state.configs, config.id, config.clone())
-	},
-	addConfig(state, { config }) {
-		Vue.set(state.configs, config.id, config)
-	},
-	deleteConfig(state, { id }) {
-		if (!state.configs[id]) {
-			return
-		}
+			this.configs[config.id] = config.clone()
+		},
+		addConfigMutation(state, { config }) {
+			this.configs[config.id] = config
+		},
+		deleteConfigMutation(state, { id }) {
+			if (!state.configs[id]) {
+				return
+			}
 
-		Vue.delete(state.configs, id)
+			Vue.delete(state.configs, id)
+		},
 	},
-}
-
-const getters = {
-	allConfigs(state) {
-		return Object.values(state.configs)
-	},
-}
-
-const actions = {
-	async updateConfig({ commit }, { config }) {
-		try {
-			const updatedConfig = await updateConfig(config)
-			commit('updateConfig', { config: updatedConfig })
-			return updatedConfig
-		} catch (error) {
-			logger.error('Failed to update config', { error })
-			throw error
-		}
-	},
-	async createConfig({ commit }, { config }) {
-		try {
-			const fullConfig = await createConfig(config)
-			commit('addConfig', { config: fullConfig })
-			return fullConfig
-		} catch (error) {
-			logger.error('Failed to create config', { error })
-			throw error
-		}
-	},
-	async deleteConfig({ commit }, { id }) {
-		try {
-			await deleteConfig(id)
-			commit('deleteConfig', { id })
-		} catch (error) {
-			logger.error('Failed to delete config', { error })
-			throw error
-		}
-	},
-}
-
-export default { state, mutations, getters, actions }
+})

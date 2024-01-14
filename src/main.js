@@ -41,6 +41,10 @@ import ClickOutside from 'vue-click-outside'
 import VTooltip from 'v-tooltip'
 import VueShortKey from 'vue-shortkey'
 import windowTitleService from './services/windowTitleService.js'
+import { createPinia, PiniaVuePlugin } from 'pinia'
+
+Vue.use(PiniaVuePlugin)
+const pinia = createPinia()
 
 // register global components
 Vue.directive('ClickOutside', ClickOutside)
@@ -79,4 +83,5 @@ export default new Vue({
 	router,
 	store,
 	render: h => h(App),
+	pinia,
 })

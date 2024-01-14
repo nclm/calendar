@@ -20,7 +20,6 @@
  *
  */
 
-import Vue from 'vue'
 import { defineStore } from 'pinia'
 import { createConfig, deleteConfig, updateConfig } from '../services/appointmentConfigService.js'
 import logger from '../utils/logger.js'
@@ -37,30 +36,30 @@ export default defineStore('appointmentConfig', {
 		},
 	},
 	actions: {
-		async updateConfig({ commit }, { config }) {
+		async updateConfig({ config }) {
 			try {
 				const updatedConfig = await updateConfig(config)
-				commit('updateConfig', { config: updatedConfig })
+				this.updateConfigMutation(updatedConfig)
 				return updatedConfig
 			} catch (error) {
 				logger.error('Failed to update config', { error })
 				throw error
 			}
 		},
-		async createConfig({ commit }, { config }) {
+		async createConfig({ config }) {
 			try {
 				const fullConfig = await createConfig(config)
-				commit('addConfig', { config: fullConfig })
+				this.addConfigMutation(fullConfig)
 				return fullConfig
 			} catch (error) {
 				logger.error('Failed to create config', { error })
 				throw error
 			}
 		},
-		async deleteConfig({ commit }, { id }) {
+		async deleteConfig({ id }) {
 			try {
 				await deleteConfig(id)
-				commit('deleteConfig', { id })
+				this.deleteConfigMutation(id)
 			} catch (error) {
 				logger.error('Failed to delete config', { error })
 				throw error
@@ -73,15 +72,15 @@ export default defineStore('appointmentConfig', {
 
 			this.configs[config.id] = config.clone()
 		},
-		addConfigMutation(state, { config }) {
+		addConfigMutation({ config }) {
 			this.configs[config.id] = config
 		},
-		deleteConfigMutation(state, { id }) {
-			if (!state.configs[id]) {
+		deleteConfigMutation({ id }) {
+			if (!this.configs[id]) {
 				return
 			}
 
-			Vue.delete(state.configs, id)
+			this.configs.delete(id)
 		},
 	},
 })

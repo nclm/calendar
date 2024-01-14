@@ -42,6 +42,7 @@ import VTooltip from 'v-tooltip'
 import VueShortKey from 'vue-shortkey'
 import windowTitleService from './services/windowTitleService.js'
 import { createPinia, PiniaVuePlugin } from 'pinia'
+import useAppointmentConfigsStore from './store/appointmentConfigs.js'
 
 Vue.use(PiniaVuePlugin)
 const pinia = createPinia()
@@ -73,11 +74,6 @@ Vue.prototype.n = translatePlural
 
 windowTitleService(router, store)
 
-store.commit(
-	'addInitialConfigs',
-	loadState('calendar', 'appointmentConfigs', []).map(config => new AppointmentConfig(config))
-)
-
 export default new Vue({
 	el: '#content',
 	router,
@@ -85,3 +81,6 @@ export default new Vue({
 	render: h => h(App),
 	pinia,
 })
+
+const appointmentsConfigsStore = useAppointmentConfigsStore()
+appointmentsConfigsStore.addInitialConfigs(loadState('calendar', 'appointmentConfigs', []).map(config => new AppointmentConfig(config)))

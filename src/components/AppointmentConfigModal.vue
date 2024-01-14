@@ -164,6 +164,7 @@ import CheckedDurationSelect from './AppointmentConfigModal/CheckedDurationSelec
 import VisibilitySelect from './AppointmentConfigModal/VisibilitySelect.vue'
 import logger from '../utils/logger.js'
 import Confirmation from './AppointmentConfigModal/Confirmation.vue'
+import useAppointmentConfigsStore from '../store/appointmentConfigs.js'
 
 export default {
 	name: 'AppointmentConfigModal',
@@ -201,6 +202,7 @@ export default {
 			enableFutureLimit: false,
 			rateLimitingReached: false,
 			showConfirmation: false,
+			store: useAppointmentConfigsStore(),
 		}
 	},
 	computed: {
@@ -308,10 +310,12 @@ export default {
 			try {
 				if (this.isNew) {
 					logger.info('Creating new config', { config })
-					this.editing = await this.$store.dispatch('createConfig', { config })
+					// this.editing = await this.$store.dispatch('createConfig', { config })
+					this.editing = await this.store.createConfig({ config })
 				} else {
 					logger.info('Saving config', { config })
-					this.editing = await this.$store.dispatch('updateConfig', { config })
+					// this.editing = await this.$store.dispatch('updateConfig', { config })
+					this.editing = await this.store.updateConfig({ config })
 				}
 				this.showConfirmation = true
 			} catch (error) {

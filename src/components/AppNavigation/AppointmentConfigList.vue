@@ -68,8 +68,8 @@ import PlusIcon from 'vue-material-design-icons/Plus.vue'
 import AppointmentConfigModal from '../AppointmentConfigModal.vue'
 import AppointmentConfig from '../../models/appointmentConfig.js'
 import logger from '../../utils/logger.js'
-import { mapGetters } from 'vuex'
 import NoEmailAddressWarning from '../AppointmentConfigModal/NoEmailAddressWarning.vue'
+import useAppointmentConfigsStore from '../../store/appointmentConfigs.js'
 
 export default {
 	name: 'AppointmentConfigList',
@@ -87,9 +87,10 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters({
-			configs: 'allConfigs',
-		}),
+		configs() {
+			const store = useAppointmentConfigsStore()
+			return store.allConfigs
+		},
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
 				this.calendarUrlToUri(this.$store.getters.ownSortedCalendars[0].url),

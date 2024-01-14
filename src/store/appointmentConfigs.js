@@ -31,11 +31,16 @@ export default defineStore('appointmentConfig', {
 		}
 	},
 	getters: {
-		allConfigs(state) {
-			return Object.values(state.configs)
+		allConfigs() {
+			return Object.values(this.configs)
 		},
 	},
 	actions: {
+		addInitialConfigs(configs) {
+			for (const config of configs) {
+				this.configs[config.id] = config
+			}
+		},
 		async updateConfig({ config }) {
 			try {
 				const updatedConfig = await updateConfig(config)

@@ -285,6 +285,7 @@ export default defineStore('settings', {
 				'DESCRIPTION',
 			])
 		},
+
 		/**
 		 * Initialize settings
 		 *

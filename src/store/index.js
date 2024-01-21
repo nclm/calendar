@@ -35,7 +35,6 @@ import fetchedTimeRanges from './fetchedTimeRanges.js'
 import importFiles from './importFiles.js'
 import importState from './importState.js'
 import principals from './principals.js'
-import settings from './settings.js'
 
 Vue.use(Vuex)
 
@@ -50,7 +49,6 @@ export default new Vuex.Store({
 		importFiles,
 		importState,
 		principals,
-		settings,
 	},
 	// // Throw errors when the state is edited outside of mutations
 	// strict: true

@@ -122,16 +122,13 @@ import {
 	NcActionCheckbox as ActionCheckbox,
 	NcActionLink as ActionLink,
 	NcAppNavigationSettings as AppNavigationSettings,
-	NcMultiselect as Multiselect,
 } from '@nextcloud/vue'
 import {
 	generateRemoteUrl,
 	generateUrl,
 } from '@nextcloud/router'
-import {
-	mapGetters,
-	mapState,
-} from 'vuex'
+import { mapStores } from 'pinia'
+import useSettingsStore from '../../store/settings.js'
 import moment from '@nextcloud/moment'
 import {
 	showSuccess,
@@ -155,6 +152,7 @@ import { getDefaultAlarms } from '../../defaults/defaultAlarmProvider.js'
 import ClipboardArrowLeftOutline from 'vue-material-design-icons/ClipboardArrowLeftOutline.vue'
 import InformationVariant from 'vue-material-design-icons/InformationVariant.vue'
 import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue'
+import {mapGetters} from "vuex";
 
 export default {
 	name: 'Settings',
@@ -195,18 +193,7 @@ export default {
 		...mapGetters({
 			birthdayCalendar: 'hasBirthdayCalendar',
 		}),
-		...mapState({
-			eventLimit: state => state.settings.eventLimit,
-			showPopover: state => !state.settings.skipPopover,
-			showTasks: state => state.settings.showTasks,
-			showWeekends: state => state.settings.showWeekends,
-			showWeekNumbers: state => state.settings.showWeekNumbers,
-			slotDuration: state => state.settings.slotDuration,
-			defaultReminder: state => state.settings.defaultReminder,
-			timezone: state => state.settings.timezone,
-			locale: (state) => state.settings.momentLocale,
-			attachmentsFolder: (state) => state.settings.attachmentsFolder,
-		}),
+    ...mapStores(useSettingsStore()),
 		isBirthdayCalendarDisabled() {
 			return this.savingBirthdayCalendar || this.loadingCalendars
 		},

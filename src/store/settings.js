@@ -30,6 +30,7 @@ import { logInfo } from '../utils/logger.js'
 import { defineStore } from 'pinia'
 import getTimezoneManager from '../services/timezoneDataProviderService.js'
 import * as AttachmentService from '../services/attachmentService.js'
+import usePrincipalsStore from './principals.js'
 
 export default defineStore('settings', {
 	state: () => {
@@ -261,11 +262,13 @@ export default defineStore('settings', {
 		 * @return {Promise<string>} The path of the user's attachments folder
 		 */
 		async createAttachmentsFolder() {
+			const principalsStore = usePrincipalsStore()
+
 			if (this.attachmentsFolderCreated) {
 				return this.attachmentsFolder
 			}
 
-			const userId = getters.getCurrentUserPrincipal.dav.userId ///TODO make work with new eventual principals.js
+			const userId = principalsStore.getCurrentUserPrincipal.dav.userId /// TODO make work with new eventual principals.js
 			const path = await AttachmentService.createFolder(this.attachmentsFolder, userId)
 			if (path !== this.attachmentsFolder) {
 				await this.setAttachmentsFolder({ attachmentsFolder: path })
@@ -367,6 +370,5 @@ Initial settings:
 			this.momentLocale = locale
 		},
 	},
-
 
 })

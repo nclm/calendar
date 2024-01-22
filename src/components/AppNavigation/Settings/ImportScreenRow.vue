@@ -35,6 +35,8 @@
 <script>
 import CalendarPicker from '../../Shared/CalendarPicker.vue'
 import { uidToHexColor } from '../../../utils/color.js'
+import usePrincipalsStore from '../../../store/principals.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'ImportScreenRow',
@@ -48,6 +50,7 @@ export default {
 		},
 	},
 	computed: {
+		...mapStores(usePrincipalsStore()),
 		calendar() {
 			let calendarId = this.$store.state.importFiles.importCalendarRelation[this.file.id]
 			if (!calendarId) {
@@ -61,7 +64,7 @@ export default {
 					displayName: this.$t('calendar', 'New calendar'),
 					isSharedWithMe: false,
 					color: uidToHexColor(this.$t('calendar', 'New calendar')),
-					owner: this.$store.getters.getCurrentUserPrincipal.url,
+					owner: this.principalsStore.getCurrentUserPrincipal.url,
 				}
 			}
 
@@ -81,7 +84,7 @@ export default {
 				displayName: this.$t('calendar', 'New calendar'),
 				isSharedWithMe: false,
 				color: uidToHexColor(this.$t('calendar', 'New calendar')),
-				owner: this.$store.getters.getCurrentUserPrincipal.url,
+				owner: this.principalsStore.getCurrentUserPrincipal.url,
 			})
 
 			return calendars

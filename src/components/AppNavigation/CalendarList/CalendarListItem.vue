@@ -105,6 +105,8 @@ import CheckboxBlankCircleOutline from 'vue-material-design-icons/CheckboxBlankC
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Undo from 'vue-material-design-icons/Undo.vue'
 import LinkVariant from 'vue-material-design-icons/LinkVariant.vue'
+import usePrincipalsStore from '../../../store/principals.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'CalendarListItem',
@@ -133,6 +135,7 @@ export default {
 		}
 	},
 	computed: {
+		...mapStores(usePrincipalsStore()),
 		/**
 		 * Whether to show the sharing section
 		 *
@@ -163,10 +166,10 @@ export default {
 		 * @return {boolean}
 		 */
 		loadedOwnerPrincipal() {
-			return this.$store.getters.getPrincipalByUrl(this.calendar.owner) !== undefined
+			return this.principalsStore.getPrincipalByUrl(this.calendar.owner) !== undefined
 		},
 		ownerUserId() {
-			const principal = this.$store.getters.getPrincipalByUrl(this.calendar.owner)
+			const principal = this.principalsStore.getPrincipalByUrl(this.calendar.owner)
 			if (principal) {
 				return principal.userId
 			}
@@ -174,7 +177,7 @@ export default {
 			return ''
 		},
 		ownerDisplayname() {
-			const principal = this.$store.getters.getPrincipalByUrl(this.calendar.owner)
+			const principal = this.principalsStore.getPrincipalByUrl(this.calendar.owner)
 			if (principal) {
 				return principal.displayname
 			}

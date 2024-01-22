@@ -30,7 +30,7 @@ import {
 } from '../models/principal.js'
 import { defineStore } from 'pinia'
 
-export default defineStore('settings', {
+export default defineStore('principals', {
 	state: () => {
 		return {
 			principals: [],

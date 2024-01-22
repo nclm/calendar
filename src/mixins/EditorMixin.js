@@ -33,6 +33,7 @@ import {
 } from 'vuex'
 import { translate as t } from '@nextcloud/l10n'
 import { removeMailtoPrefix } from '../utils/attendee.js'
+import usePrincipalsStore from '../store/principals.js'
 
 /**
  * This is a mixin for the editor. It contains common Vue stuff, that is
@@ -239,11 +240,13 @@ export default {
 		 * @return {?object}
 		 */
 		userAsAttendee() {
-			if (this.isReadOnly || !this.$store.getters.getCurrentUserPrincipalEmail || !this.calendarObjectInstance.organizer) {
+			const principalsStore = usePrincipalsStore()
+
+			if (this.isReadOnly || !principalsStore.getCurrentUserPrincipalEmail || !this.calendarObjectInstance.organizer) {
 				return null
 			}
 
-			const principal = removeMailtoPrefix(this.$store.getters.getCurrentUserPrincipalEmail)
+			const principal = removeMailtoPrefix(principalsStore.getCurrentUserPrincipalEmail)
 			for (const attendee of this.calendarObjectInstance.attendees) {
 				if (removeMailtoPrefix(attendee.uri) === principal) {
 					return attendee

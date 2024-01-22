@@ -51,6 +51,8 @@ import HttpClient from '@nextcloud/axios'
 import debounce from 'debounce'
 import { generateOcsUrl } from '@nextcloud/router'
 import { urldecode } from '../../../utils/url.js'
+import usePrincipalsStore from '../../../store/principals.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'SharingSearch',
@@ -69,6 +71,9 @@ export default {
 			inputGiven: false,
 			usersOrGroups: [],
 		}
+	},
+	computed: {
+		...mapStores(usePrincipalsStore()),
 	},
 	methods: {
 		/**
@@ -112,8 +117,8 @@ export default {
 			this.calendar.shares.forEach((share) => {
 				hiddenPrincipalSchemes.push(share.uri)
 			})
-			if (this.$store.getters.getCurrentUserPrincipal) {
-				hiddenUrls.push(this.$store.getters.getCurrentUserPrincipal.url)
+			if (this.principalsStore.getCurrentUserPrincipal) {
+				hiddenUrls.push(this.principalsStore.getCurrentUserPrincipal.url)
 			}
 			if (this.calendar.owner) {
 				hiddenUrls.push(this.calendar.owner)

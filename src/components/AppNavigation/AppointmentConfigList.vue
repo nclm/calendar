@@ -70,6 +70,8 @@ import AppointmentConfig from '../../models/appointmentConfig.js'
 import logger from '../../utils/logger.js'
 import NoEmailAddressWarning from '../AppointmentConfigModal/NoEmailAddressWarning.vue'
 import useAppointmentConfigsStore from '../../store/appointmentConfigs.js'
+import usePrincipalsStore from '../../store/principals.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'AppointmentConfigList',
@@ -87,6 +89,7 @@ export default {
 		}
 	},
 	computed: {
+		...mapStores(usePrincipalsStore()),
 		configs() {
 			const store = useAppointmentConfigsStore()
 			return store.allConfigs
@@ -102,7 +105,7 @@ export default {
 			return !!this.$store.getters.ownSortedCalendars[0]
 		},
 		hasUserEmailAddress() {
-			const principal = this.$store.getters.getCurrentUserPrincipal
+			const principal = this.principalsStore.getCurrentUserPrincipal
 			if (!principal) {
 				return false
 			}

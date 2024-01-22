@@ -41,6 +41,8 @@
 
 <script>
 import { NcAvatar as Avatar } from '@nextcloud/vue'
+import usePrincipalsStore from '../../store/principals.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'CalendarPickerOption',
@@ -66,6 +68,7 @@ export default {
 		},
 	},
 	computed: {
+		...mapStores(usePrincipalsStore()),
 		/**
 		 * Get the principal object of the calendar's owner
 		 *

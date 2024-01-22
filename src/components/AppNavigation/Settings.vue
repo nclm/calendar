@@ -152,7 +152,7 @@ import { getDefaultAlarms } from '../../defaults/defaultAlarmProvider.js'
 import ClipboardArrowLeftOutline from 'vue-material-design-icons/ClipboardArrowLeftOutline.vue'
 import InformationVariant from 'vue-material-design-icons/InformationVariant.vue'
 import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue'
-import {mapGetters} from "vuex";
+import { mapGetters } from 'vuex'
 
 export default {
 	name: 'Settings',
@@ -162,7 +162,6 @@ export default {
 		ActionCheckbox,
 		ActionLink,
 		AppNavigationSettings,
-		Multiselect,
 		SettingsImportSection,
 		SettingsTimezoneSelect,
 		SettingsAttachmentsFolder,
@@ -193,7 +192,7 @@ export default {
 		...mapGetters({
 			birthdayCalendar: 'hasBirthdayCalendar',
 		}),
-    ...mapStores(useSettingsStore()),
+		...mapStores(useSettingsStore()),
 		isBirthdayCalendarDisabled() {
 			return this.savingBirthdayCalendar || this.loadingCalendars
 		},
@@ -265,7 +264,7 @@ export default {
 			// change to loading status
 			this.savingBirthdayCalendar = true
 			try {
-				await this.$store.dispatch('toggleBirthdayCalendarEnabled')
+				await this.settingStore.toggleBirthdayCalendarEnabled()
 				this.savingBirthdayCalendar = false
 			} catch (error) {
 				console.error(error)
@@ -277,7 +276,7 @@ export default {
 			// change to loading status
 			this.savingEventLimit = true
 			try {
-				await this.$store.dispatch('toggleEventLimitEnabled')
+				await this.settingsStore.toggleEventLimitEnabled()
 				this.savingEventLimit = false
 			} catch (error) {
 				console.error(error)
@@ -289,7 +288,7 @@ export default {
 			// change to loading status
 			this.savingTasks = true
 			try {
-				await this.$store.dispatch('toggleTasksEnabled')
+				await this.settingsStore.toggleTasksEnabled()
 				this.savingTasks = false
 			} catch (error) {
 				console.error(error)
@@ -301,7 +300,7 @@ export default {
 			// change to loading status
 			this.savingPopover = true
 			try {
-				await this.$store.dispatch('togglePopoverEnabled')
+				await this.settingsStore.togglePopoverEnabled()
 				this.savingPopover = false
 			} catch (error) {
 				console.error(error)
@@ -313,7 +312,7 @@ export default {
 			// change to loading status
 			this.savingWeekend = true
 			try {
-				await this.$store.dispatch('toggleWeekendsEnabled')
+				await this.settingsStore.toggleWeekendsEnabled()
 				this.savingWeekend = false
 			} catch (error) {
 				console.error(error)
@@ -328,7 +327,7 @@ export default {
 			// change to loading status
 			this.savingWeekNumber = true
 			try {
-				await this.$store.dispatch('toggleWeekNumberEnabled')
+				await this.settingsStore.toggleWeekNumberEnabled()
 				this.savingWeekNumber = false
 			} catch (error) {
 				console.error(error)
@@ -350,9 +349,7 @@ export default {
 			this.savingSlotDuration = true
 
 			try {
-				await this.$store.dispatch('setSlotDuration', {
-					slotDuration: option.value,
-				})
+				await this.settingsStore.setSlotDuration({ slotDuration: option.value })
 				this.savingSlotDuration = false
 			} catch (error) {
 				console.error(error)
@@ -374,7 +371,7 @@ export default {
 			this.savingDefaultReminder = true
 
 			try {
-				await this.$store.dispatch('setDefaultReminder', {
+				await this.settingsStore.setDefaultReminder({
 					defaultReminder: option.value,
 				})
 				this.savingDefaultReminder = false

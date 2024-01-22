@@ -79,6 +79,8 @@ import { eventSourceFunction } from '../fullcalendar/eventSources/eventSourceFun
 import loadMomentLocalization from '../utils/moment.js'
 import { DateTimeValue } from '@nextcloud/calendar-js'
 import { mapGetters } from 'vuex'
+import { mapStores } from 'pinia'
+import useSettingsStore from '../store/settings.js'
 
 export default {
 	name: 'Dashboard',
@@ -104,6 +106,7 @@ export default {
 		...mapGetters({
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
+		...mapStores(useSettingsStore()),
 		/**
 		 * Format loaded events
 		 *
@@ -238,7 +241,7 @@ export default {
 		 * @return {string}
 		 */
 		formatSubtext(event) {
-			const locale = this.$store.state.settings.momentLocale
+			const locale = this.settingsStore.momentLocale
 
 			if (event.allDay) {
 				return moment(event.start).locale(locale).calendar(null, {

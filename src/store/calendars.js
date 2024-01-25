@@ -50,6 +50,7 @@ import {
 } from '../models/consts.js'
 import { showError } from '@nextcloud/dialogs'
 import useImportStateStore from './importState.js'
+import useImportFilesStore from './importFiles.js'
 
 const state = {
 	calendars: [],
@@ -1061,6 +1062,7 @@ const actions = {
 	 */
 	async importEventsIntoCalendar(context) {
 		const importStateStore = useImportStateStore()
+		const importFilesStore = useImportFilesStore()
 		importStateStore.stage = IMPORT_STAGE_IMPORTING
 
 		// Create a copy
@@ -1090,10 +1092,7 @@ const actions = {
 				const response = await createCalendar(displayName, color, components, 0)
 				const calendar = mapDavCollectionToCalendar(response, context.getters.getCurrentUserPrincipal)
 				context.commit('addCalendar', { calendar })
-				context.commit('setCalendarForFileId', {
-					fileId: file.id,
-					calendarId: calendar.id,
-				})
+				importFilesStore.importCalendarRelation[file.id] = calendar.id
 			}
 		}
 

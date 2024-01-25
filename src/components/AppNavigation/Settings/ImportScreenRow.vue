@@ -36,6 +36,7 @@
 import CalendarPicker from '../../Shared/CalendarPicker.vue'
 import { uidToHexColor } from '../../../utils/color.js'
 import usePrincipalsStore from '../../../store/principals.js'
+import useImportFilesStore from '../../../store/importState.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -50,7 +51,7 @@ export default {
 		},
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useImportFilesStore),
 		calendar() {
 			let calendarId = this.$store.state.importFiles.importCalendarRelation[this.file.id]
 			if (!calendarId) {
@@ -92,16 +93,10 @@ export default {
 	},
 	methods: {
 		selectCalendar(newCalendar) {
-			this.$store.commit('setCalendarForFileId', {
-				fileId: this.file.id,
-				calendarId: newCalendar.id,
-			})
+			this.importFilesStore.importCalendarRelation[this.file.id] = newCalendar.id
 		},
 		setDefaultCalendarId() {
-			this.$store.commit('setCalendarForFileId', {
-				fileId: this.file.id,
-				calendarId: this.calendars[0].id,
-			})
+			this.importFilesStore.importCalendarRelation[this.file.id] = this.calendars[0].id
 		},
 	},
 }

@@ -67,6 +67,7 @@ import {
 
 import Upload from 'vue-material-design-icons/Upload.vue'
 import useImportStateStore from '../../../store/importState.js'
+import useImportFilesStore from '../../../store/importFiles.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -82,7 +83,7 @@ export default {
 		},
 	},
 	computed: {
-		...mapStores(useImportStateStore()),
+		...mapStores(useImportStateStore(), useImportFilesStore()),
 		...mapState({
 			files: state => state.importFiles.importFiles,
 			stage: state => state.importState.stage,
@@ -206,7 +207,7 @@ export default {
 					continue
 				}
 
-				this.$store.commit('addFile', {
+				this.importFilesStore.addFile({
 					contents,
 					lastModified,
 					name,
@@ -219,7 +220,7 @@ export default {
 
 			if (!addedFiles) {
 				showError(this.$t('calendar', 'No valid files found, aborting import'))
-				this.$store.commit('removeAllFiles')
+				this.importFilesStore.removeAllFiles()
 				this.importStateStore.resetState()
 				return
 			}
@@ -241,7 +242,7 @@ export default {
 					total: this.total,
 				}))
 			}
-			this.$store.commit('removeAllFiles')
+			this.importFilesStore.removeAllFiles()
 			this.importStateStore.resetState()
 
 			// Once we are done importing, reload the calendar view
@@ -253,7 +254,7 @@ export default {
 		 * Resets the import sate
 		 */
 		cancelImport() {
-			this.$store.commit('removeAllFiles')
+			this.importFilesStore.removeAllFiles()
 			this.importStateStore.resetState()
 			this.resetInput()
 		},

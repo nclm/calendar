@@ -49,6 +49,7 @@ import {
 	IMPORT_STAGE_PROCESSING,
 } from '../models/consts.js'
 import { showError } from '@nextcloud/dialogs'
+import useImportStateStore from './importState.js'
 
 const state = {
 	calendars: [],
@@ -1059,7 +1060,8 @@ const actions = {
 	 * @param {object} context the store mutations
 	 */
 	async importEventsIntoCalendar(context) {
-		context.commit('changeStage', IMPORT_STAGE_IMPORTING)
+		const importStateStore = useImportStateStore()
+		importStateStore.stage = IMPORT_STAGE_IMPORTING
 
 		// Create a copy
 		const files = context.rootState.importFiles.importFiles.slice()
@@ -1095,7 +1097,7 @@ const actions = {
 			}
 		}
 
-		context.commit('setTotal', totalCount)
+		importStateStore.total = totalCount
 
 		const limit = pLimit(3)
 		const requests = []
@@ -1103,6 +1105,7 @@ const actions = {
 		for (const file of files) {
 			const calendarId = context.rootState.importFiles.importCalendarRelation[file.id]
 			const calendar = context.getters.getCalendarById(calendarId)
+			const importStateStore = useImportStateStore()
 
 			for (const item of file.parser.getItemIterator()) {
 				requests.push(limit(async () => {
@@ -1112,7 +1115,7 @@ const actions = {
 					try {
 						davObject = await calendar.dav.createVObject(ics)
 					} catch (error) {
-						context.commit('incrementDenied')
+						importStateStore.denied++
 						console.error(error)
 						return
 					}
@@ -1127,13 +1130,13 @@ const actions = {
 						calendarId: calendar.id,
 						calendarObjectId: calendarObject.id,
 					})
-					context.commit('incrementAccepted')
+					importStateStore.accepted++
 				}))
 			}
 		}
 
 		await Promise.all(requests)
-		context.commit('changeStage', IMPORT_STAGE_PROCESSING)
+		importStateStore.stage = IMPORT_STAGE_PROCESSING
 	},
 	/**
 	 *

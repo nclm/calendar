@@ -66,6 +66,8 @@ import {
 } from '../../../models/consts.js'
 
 import Upload from 'vue-material-design-icons/Upload.vue'
+import useImportStateStore from '../../../store/importState.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'SettingsImportSection',
@@ -80,6 +82,7 @@ export default {
 		},
 	},
 	computed: {
+		...mapStores(useImportStateStore()),
 		...mapState({
 			files: state => state.importFiles.importFiles,
 			stage: state => state.importState.stage,
@@ -156,7 +159,7 @@ export default {
 		 * @param {Event} event The change-event of the input-field
 		 */
 		async processFiles(event) {
-			this.$store.commit('changeStage', IMPORT_STAGE_PROCESSING)
+			this.importStateStore.stage = IMPORT_STAGE_PROCESSING
 			let addedFiles = false
 
 			for (const file of event.target.files) {
@@ -217,11 +220,11 @@ export default {
 			if (!addedFiles) {
 				showError(this.$t('calendar', 'No valid files found, aborting import'))
 				this.$store.commit('removeAllFiles')
-				this.$store.commit('resetState')
+				this.importStateStore.resetState()
 				return
 			}
 
-			this.$store.commit('changeStage', IMPORT_STAGE_AWAITING_USER_SELECT)
+			this.importStateStore.stage = IMPORT_STAGE_AWAITING_USER_SELECT
 		},
 		/**
 		 * Import all events into the calendars
@@ -239,7 +242,7 @@ export default {
 				}))
 			}
 			this.$store.commit('removeAllFiles')
-			this.$store.commit('resetState')
+			this.importStateStore.resetState()
 
 			// Once we are done importing, reload the calendar view
 			this.$store.commit('incrementModificationCount')
@@ -251,7 +254,7 @@ export default {
 		 */
 		cancelImport() {
 			this.$store.commit('removeAllFiles')
-			this.$store.commit('resetState')
+			this.importStateStore.resetState()
 			this.resetInput()
 		},
 		/**

@@ -327,7 +327,7 @@ import { shareFile } from '../services/attachmentService.js'
 import { DateTimeValue, Parameter } from '@nextcloud/calendar-js'
 import getTimezoneManager from '../services/timezoneDataProviderService.js'
 
-import usePrincipalsStore from '../../store/principals.js'
+import usePrincipalsStore from '../store/principals.js'
 import { mapStores } from 'pinia'
 
 export default {

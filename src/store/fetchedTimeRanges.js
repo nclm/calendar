@@ -19,9 +19,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-import Vue from 'vue'
 import { defineStore } from 'pinia'
-import useCalendarObjectsStore from './calendarObjects'
+import useCalendarObjectsStore from './calendarObjects.js'
 
 export default defineStore('fetchedTimeRanges', {
 	state: () => {
@@ -61,7 +60,6 @@ export default defineStore('fetchedTimeRanges', {
 		 */
 		getAllTimeRangesOlderThan: (state) => (olderThan) =>
 			state.fetchedTimeRanges.filter(f => (f.lastFetched <= olderThan)),
-
 
 		/**
 		 *
@@ -154,7 +152,7 @@ export default defineStore('fetchedTimeRanges', {
 		 * @param {string} data.calendarObjectId The id of the calendar-object to remove
 		 */
 		removeCalendarObjectIdFromTimeRange({ timeRangeId, calendarObjectId }) {
-			const index = state.fetchedTimeRangesById[timeRangeId]
+			const index = this.fetchedTimeRangesById[timeRangeId]
 				.calendarObjectIds
 				.indexOf(calendarObjectId)
 			if (index !== -1) {
@@ -184,17 +182,6 @@ export default defineStore('fetchedTimeRanges', {
 		},
 
 		/**
-		 * Updates the last-fetched timestamp of a time-range
-		 *
-		 * @param {object} data The destructuring object
-		 * @param {number} data.timeRangeId The id of the timerange
-		 * @param {number} data.lastFetched Timestamp of last-fetched
-		 */
-		updateTimestampOfLastFetched({ timeRangeId, lastFetched }) {
-			this.fetchedTimeRangesById[timeRangeId].lastFetched = lastFetched
-		},
-
-		/**
 		 * Adds a calendar-object-id to all time-ranges of a given caloendar
 		 *
 		 * @param {object} data The destructuring object
@@ -202,19 +189,19 @@ export default defineStore('fetchedTimeRanges', {
 		 * @param {string} data.calendarId The id of the calendar
 		 */
 		addCalendarObjectIdToAllTimeRangesOfCalendar({ calendarObjectId, calendarId }) {
-			for (const timerange of this.fetchedTimeRanges) {
-				if (timerange.calendarId !== calendarId) {
+			for (const timeRange of this.fetchedTimeRanges) {
+				if (timeRange.calendarId !== calendarId) {
 					continue
 				}
 
-				if (timerange.calendarObjectIds.indexOf(calendarObjectId) === -1) {
-					timerange.calendarObjectIds.push(calendarObjectId)
+				if (timeRange.calendarObjectIds.indexOf(calendarObjectId) === -1) {
+					timeRange.calendarObjectIds.push(calendarObjectId)
 				}
 			}
 		},
 
 		/**
-		 * Removes a calendar-object-id to all time-ranges of a given caloendar
+		 * Removes a calendar-object-id to all time-ranges of a given calendar
 		 *
 		 * @param {object} data The destructuring object
 		 * @param {string} data.calendarObjectId The id of the calendar-object

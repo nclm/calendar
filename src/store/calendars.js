@@ -51,6 +51,8 @@ import {
 import { showError } from '@nextcloud/dialogs'
 import useImportStateStore from './importState.js'
 import useImportFilesStore from './importFiles.js'
+import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
+import fetchedTimeRanges from './fetchedTimeRanges.js'
 
 const state = {
 	calendars: [],
@@ -788,7 +790,8 @@ const actions = {
 		commit('removeDeletedCalendar', { calendar })
 	},
 
-	async restoreCalendarObject({ commit, state, getters }, { vobject }) {
+	async restoreCalendarObject({ commit, state }, { vobject }) {
+		const fetchedTimeRangesStore = useFetchedTimeRangesStore()
 		await state.trashBin.restore(vobject.uri)
 
 		// Clean up the data locally
@@ -797,7 +800,7 @@ const actions = {
 		// Delete cached time range that includes the restored event
 		const calendarObject = mapCDavObjectToCalendarObject(vobject.dav, undefined)
 		const component = calendarObject.calendarComponent.getFirstComponent(vobject.objectType)
-		const timeRange = getters.getTimeRangeForCalendarCoveringRange(
+		const timeRange = fetchedTimeRangesStore.getTimeRangeForCalendarCoveringRange(
 			vobject.calendar.id,
 			component.startDate?.unixTime,
 			component.endDate?.unixTime,
@@ -807,7 +810,7 @@ const actions = {
 				calendar: vobject.calendar,
 				fetchedTimeRangeId: timeRange.id,
 			})
-			commit('removeTimeRange', {
+			fetchedTimeRangesStore.removeTimeRange({
 				timeRangeId: timeRange.id,
 			})
 		}
@@ -970,13 +973,14 @@ const actions = {
 	 * @return {Promise<void>}
 	 */
 	async getEventsFromCalendarInTimeRange(context, { calendar, from, to }) {
+		const fetchedTimeRangesStore = useFetchedTimeRangesStore()
 		context.commit('markCalendarAsLoading', { calendar })
 		const response = await calendar.dav.findByTypeInTimeRange('VEVENT', from, to)
 		let responseTodo = []
 		if (context.rootState.settings.showTasks) {
 			responseTodo = await calendar.dav.findByTypeInTimeRange('VTODO', from, to)
 		}
-		context.commit('addTimeRange', {
+		fetchedTimeRangesStore.addTimeRange({
 			calendarId: calendar.id,
 			from: getUnixTimestampFromDate(from),
 			to: getUnixTimestampFromDate(to),
@@ -1005,7 +1009,7 @@ const actions = {
 
 		context.commit('appendCalendarObjects', { calendarObjects })
 		context.commit('appendCalendarObjectsToCalendar', { calendar, calendarObjectIds })
-		context.commit('appendCalendarObjectIdsToTimeFrame', {
+		fetchedTimeRangesStore.appendCalendarObjectIdsToTimeFrame({
 			timeRangeId: insertId,
 			calendarObjectIds,
 		})
@@ -1105,6 +1109,7 @@ const actions = {
 			const calendarId = context.rootState.importFiles.importCalendarRelation[file.id]
 			const calendar = context.getters.getCalendarById(calendarId)
 			const importStateStore = useImportStateStore()
+			const fetchedTimeRangesStore = useFetchedTimeRangesStore()
 
 			for (const item of file.parser.getItemIterator()) {
 				requests.push(limit(async () => {
@@ -1125,7 +1130,7 @@ const actions = {
 						calendar,
 						calendarObjectId: calendarObject.id,
 					})
-					context.commit('addCalendarObjectIdToAllTimeRangesOfCalendar', {
+					fetchedTimeRangesStore.addCalendarObjectIdToAllTimeRangesOfCalendar({
 						calendarId: calendar.id,
 						calendarObjectId: calendarObject.id,
 					})

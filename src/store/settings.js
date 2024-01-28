@@ -31,6 +31,7 @@ import { defineStore } from 'pinia'
 import getTimezoneManager from '../services/timezoneDataProviderService.js'
 import * as AttachmentService from '../services/attachmentService.js'
 import usePrincipalsStore from './principals.js'
+import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
 
 export default defineStore('settings', {
 	state: () => {
@@ -153,18 +154,19 @@ export default defineStore('settings', {
 		},
 
 		/**
-		 * TODO make this work with eventual calendarObjects.js and fetchedTimeRanges.js
+		 * TODO make this work with eventual calendarObjects.js
 		 * Updates the user's setting for visibility of tasks
 		 *
 		 * @return {Promise<void>}
 		 */
 		async toggleTasksEnabled() {
+			const fetchedTimeRangesStore = useFetchedTimeRangesStore()
 			const newState = !this.showTasks
 			const value = newState ? 'yes' : 'no'
 
 			await setConfig('showTasks', value)
 			this.showTasks = !this.showTasks
-			commit('clearFetchedTimeRanges')
+			fetchedTimeRangesStore.clearFetchedTimeRanges()
 			commit('incrementModificationCount')
 		},
 

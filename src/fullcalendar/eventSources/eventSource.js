@@ -26,14 +26,14 @@ import getTimezoneManager from '../../services/timezoneDataProviderService.js'
 import { getUnixTimestampFromDate } from '../../utils/date.js'
 import { eventSourceFunction } from './eventSourceFunction.js'
 import logger from '../../utils/logger.js'
+import useFetchedTimeRangesStore from '../../store/fetchedTimeRanges.js'
 
 /**
  * Returns a function to generate a FullCalendar event-source based on the Vuex calendar model
  *
- * @param {object} store The Vuex store
  * @return {function(*=): {backgroundColor: *, borderColor: *, className: *, id: *, textColor: *, events: events}}
  */
-export default function(store) {
+export default function() {
 	return function(calendar) {
 		const source = {
 			id: calendar.id,
@@ -50,10 +50,11 @@ export default function(store) {
 				}
 
 				// This code assumes that once a time range has been fetched it won't be changed
-				// outside of the vuex store. Triggering a refetch will just update all known
+				// outside of the vuex(Pinia) store. Triggering a refetch will just update all known
 				// calendar objects inside this time range. New events that were added to a cached
 				// time range externally will not be fetched and have to be added manually.
-				const timeRange = store.getters.getTimeRangeForCalendarCoveringRange(calendar.id, getUnixTimestampFromDate(start), getUnixTimestampFromDate(end))
+				const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+				const timeRange = fetchedTimeRangesStore.getTimeRangeForCalendarCoveringRange(calendar.id, getUnixTimestampFromDate(start), getUnixTimestampFromDate(end))
 				if (!timeRange) {
 					let timeRangeId
 					try {
@@ -67,10 +68,10 @@ export default function(store) {
 						return
 					}
 
-					const calendarObjects = store.getters.getCalendarObjectsByTimeRangeId(timeRangeId)
+					const calendarObjects = fetchedTimeRangesStore.getCalendarObjectsByTimeRangeId(timeRangeId)
 					successCallback(eventSourceFunction(calendarObjects, calendar, start, end, timezoneObject))
 				} else {
-					const calendarObjects = store.getters.getCalendarObjectsByTimeRangeId(timeRange.id)
+					const calendarObjects = fetchedTimeRangesStore.getCalendarObjectsByTimeRangeId(timeRange.id)
 					successCallback(eventSourceFunction(calendarObjects, calendar, start, end, timezoneObject))
 				}
 			},

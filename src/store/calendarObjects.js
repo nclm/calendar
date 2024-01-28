@@ -32,6 +32,7 @@ import {
 	getTimezoneManager,
 	DateTimeValue,
 } from '@nextcloud/calendar-js'
+import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
 
 const state = {
 	calendarObjects: {},
@@ -169,6 +170,8 @@ const actions = {
 			return
 		}
 
+		const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+
 		const oldCalendarObjectId = calendarObject.id
 		const oldCalendarId = calendarObject.calendarId
 
@@ -196,7 +199,7 @@ const actions = {
 			},
 			calendarObjectId: calendarObject.id,
 		})
-		context.commit('addCalendarObjectIdToAllTimeRangesOfCalendar', {
+		fetchedTimeRangesStore.addCalendarObjectIdToAllTimeRangesOfCalendar({
 			calendarId: newCalendarId,
 			calendarObjectId: calendarObject.id,
 		})
@@ -207,7 +210,7 @@ const actions = {
 			},
 			calendarObjectId: oldCalendarObjectId,
 		})
-		context.commit('removeCalendarObjectIdFromAllTimeRangesOfCalendar', {
+		fetchedTimeRangesStore.removeCalendarObjectIdFromAllTimeRangesOfCalendar({
 			calendarId: oldCalendarId,
 			calendarObjectId: oldCalendarObjectId,
 		})
@@ -224,11 +227,13 @@ const actions = {
 	 * @return {Promise<void>}
 	 */
 	async updateCalendarObject(context, { calendarObject }) {
+		const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+
 		if (calendarObject.existsOnServer) {
 			calendarObject.dav.data = calendarObject.calendarComponent.toICS()
 			await calendarObject.dav.update()
 
-			context.commit('addCalendarObjectIdToAllTimeRangesOfCalendar', {
+			fetchedTimeRangesStore.addCalendarObjectIdToAllTimeRangesOfCalendar({
 				calendarId: calendarObject.calendarId,
 				calendarObjectId: calendarObject.id,
 			})
@@ -251,7 +256,7 @@ const actions = {
 			},
 			calendarObjectId: calendarObject.id,
 		})
-		context.commit('addCalendarObjectIdToAllTimeRangesOfCalendar', {
+		fetchedTimeRangesStore.addCalendarObjectIdToAllTimeRangesOfCalendar({
 			calendarId: calendarObject.calendarId,
 			calendarObjectId: calendarObject.id,
 		})
@@ -271,6 +276,9 @@ const actions = {
 	async createCalendarObjectFromFork(context, { eventComponent, calendarId }) {
 		const calendar = context.getters.getCalendarById(calendarId)
 		const calendarObject = mapCalendarJsToCalendarObject(eventComponent.root, calendar.id)
+
+		const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+
 		calendarObject.dav = await calendar.dav.createVObject(calendarObject.calendarComponent.toICS())
 		calendarObject.existsOnServer = true
 		context.commit('updateCalendarObjectId', { calendarObject })
@@ -282,7 +290,7 @@ const actions = {
 			},
 			calendarObjectId: calendarObject.id,
 		})
-		context.commit('addCalendarObjectIdToAllTimeRangesOfCalendar', {
+		fetchedTimeRangesStore.addCalendarObjectIdToAllTimeRangesOfCalendar({
 			calendarId: calendar.id,
 			calendarObjectId: calendarObject.id,
 		})
@@ -298,6 +306,7 @@ const actions = {
 	 * @return {Promise<void>}
 	 */
 	async deleteCalendarObject(context, { calendarObject }) {
+		const fetchedTimeRangesStore = useFetchedTimeRangesStore()
 		// If this calendar-object was not created on the server yet,
 		// no need to send requests to the server
 		if (calendarObject.existsOnServer) {
@@ -311,9 +320,10 @@ const actions = {
 			},
 			calendarObjectId: calendarObject.id,
 		})
-		context.commit('removeCalendarObjectIdFromAnyTimeRange', {
+		fetchedTimeRangesStore.removeCalendarObjectIdFromAnyTimeRange({
 			calendarObjectId: calendarObject.id,
 		})
+
 		context.commit('incrementModificationCount')
 	},
 

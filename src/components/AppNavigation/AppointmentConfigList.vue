@@ -71,6 +71,7 @@ import logger from '../../utils/logger.js'
 import NoEmailAddressWarning from '../AppointmentConfigModal/NoEmailAddressWarning.vue'
 import useAppointmentConfigsStore from '../../store/appointmentConfigs.js'
 import usePrincipalsStore from '../../store/principals.js'
+import useCalendarsStore from '../../store/calendars.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -89,7 +90,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useCalendarsStore),
 		configs() {
 			const store = useAppointmentConfigsStore()
 			return store.allConfigs
@@ -97,7 +98,7 @@ export default {
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
 				this.calendarUrlToUri(this.$store.getters.ownSortedCalendars[0].url),
-				this.$store.getters.scheduleInbox,
+				this.calendarsStore.scheduleInbox,
 				this.$store.getters.getResolvedTimezone,
 			)
 		},

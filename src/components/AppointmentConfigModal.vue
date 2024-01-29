@@ -166,6 +166,7 @@ import VisibilitySelect from './AppointmentConfigModal/VisibilitySelect.vue'
 import logger from '../utils/logger.js'
 import Confirmation from './AppointmentConfigModal/Confirmation.vue'
 import useAppointmentConfigsStore from '../store/appointmentConfigs.js'
+import useCalendarsStore from '../store/calendars.js'
 
 export default {
 	name: 'AppointmentConfigModal',
@@ -210,7 +211,7 @@ export default {
 			'ownSortedCalendars',
 			'isTalkEnabled',
 		]),
-		...mapStores(useAppointmentConfigsStore()),
+		...mapStores(useAppointmentConfigsStore, useCalendarsStore),
 		formTitle() {
 			if (this.isNew) {
 				return this.$t('calendar', 'Create appointment')
@@ -247,7 +248,7 @@ export default {
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
 				this.calendarUrlToUri(this.$store.getters.ownSortedCalendars[0].url),
-				this.$store.getters.scheduleInbox,
+				this.calendarsStore.scheduleInbox,
 				this.$store.getters.getResolvedTimezone,
 			)
 		},

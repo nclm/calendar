@@ -106,6 +106,7 @@ import Pencil from 'vue-material-design-icons/Pencil.vue'
 import Undo from 'vue-material-design-icons/Undo.vue'
 import LinkVariant from 'vue-material-design-icons/LinkVariant.vue'
 import usePrincipalsStore from '../../../store/principals.js'
+import useCalendarsStore from '../../../store/calendars.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -135,7 +136,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useCalendarsStore),
 		/**
 		 * Whether to show the sharing section
 		 *
@@ -222,11 +223,12 @@ export default {
 		 * Toggles the enabled state of this calendar
 		 */
 		toggleEnabled() {
-			this.$store.dispatch('toggleCalendarEnabled', { calendar: this.calendar })
-				.catch((error) => {
-					showError(this.$t('calendar', 'An error occurred, unable to change visibility of the calendar.'))
-					console.error(error)
-				})
+			try {
+				this.calendarsStore.calendarsById[this.calendar.id].enabled = !this.calendarsStore.calendarsById[this.calendar.id].enabled
+			} catch (error) {
+				showError(this.$t('calendar', 'An error occurred, unable to change visibility of the calendar.'))
+				console.error(error)
+			}
 		},
 
 		/**

@@ -106,6 +106,7 @@ import '@nextcloud/dialogs/dist/index.css'
 import Trashbin from '../components/AppNavigation/CalendarList/Trashbin.vue'
 import AppointmentConfigList from '../components/AppNavigation/AppointmentConfigList.vue'
 import useFetchedTimeRangesStore from '../store/fetchedTimeRanges.js'
+import useCalendarsStore from '../store/calendars.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -134,7 +135,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(useFetchedTimeRangesStore()),
+		...mapStores(useFetchedTimeRangesStore, useCalendarsStore),
 		...mapGetters({
 			timezoneId: 'getResolvedTimezone',
 			hasTrashBin: 'hasTrashBin',
@@ -199,7 +200,7 @@ export default {
 				this.fetchedTimeRangesStore.removeTimeRange({
 					timeRangeId: timeRange.id,
 				})
-				this.$store.commit('deleteFetchedTimeRangeFromCalendar', {
+				this.calendarsStore.deleteFetchedTimeRangeFromCalendarMutation({
 					calendar: {
 						id: timeRange.calendarId,
 					},

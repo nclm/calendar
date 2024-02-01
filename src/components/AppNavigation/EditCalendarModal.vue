@@ -100,6 +100,8 @@ import DownloadIcon from 'vue-material-design-icons/Download.vue'
 import CloseIcon from 'vue-material-design-icons/Close.vue'
 import CheckIcon from 'vue-material-design-icons/Check.vue'
 import { showError } from '@nextcloud/dialogs'
+import useCalendarsStore from '../../store/calendars.js'
+import { mapStores } from 'pinia'
 
 export default {
 	name: 'EditCalendarModal',
@@ -126,6 +128,7 @@ export default {
 	},
 	computed: {
 		...mapGetters(['editCalendarModal']),
+		...mapStores(useCalendarsStore),
 		calendar() {
 			const id = this.editCalendarModal?.calendarId
 			if (!id) {
@@ -170,7 +173,7 @@ export default {
 		 * Close the modal (without saving).
 		 */
 		closeModal() {
-			this.$store.commit('hideEditCalendarModal')
+			this.calendarsStore.editCalendarModal = undefined
 		},
 
 		/**

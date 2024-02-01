@@ -34,6 +34,8 @@ import {
 import { translate as t } from '@nextcloud/l10n'
 import { removeMailtoPrefix } from '../utils/attendee.js'
 import usePrincipalsStore from '../store/principals.js'
+import useCalendarsStore from '../store/calendars.js'
+import { mapStores } from 'pinia'
 
 /**
  * This is a mixin for the editor. It contains common Vue stuff, that is
@@ -72,6 +74,7 @@ export default {
 			calendarObject: (state) => state.calendarObjectInstance.calendarObject,
 			calendarObjectInstance: (state) => state.calendarObjectInstance.calendarObjectInstance,
 		}),
+		...mapStores(useCalendarsStore, usePrincipalsStore),
 		eventComponent() {
 			return this.calendarObjectInstance?.eventComponent
 		},
@@ -171,7 +174,7 @@ export default {
 		 */
 		selectedCalendarColor() {
 			if (!this.selectedCalendar) {
-				const calendars = this.$store.getters.sortedCalendars
+				const calendars = this.calendarsStore.sortedCalendars
 				if (calendars.length > 0) {
 					return calendars[0].color
 				}
@@ -240,13 +243,11 @@ export default {
 		 * @return {?object}
 		 */
 		userAsAttendee() {
-			const principalsStore = usePrincipalsStore()
-
-			if (this.isReadOnly || !principalsStore.getCurrentUserPrincipalEmail || !this.calendarObjectInstance.organizer) {
+			if (this.isReadOnly || !this.principalsStore.getCurrentUserPrincipalEmail || !this.calendarObjectInstance.organizer) {
 				return null
 			}
 
-			const principal = removeMailtoPrefix(principalsStore.getCurrentUserPrincipalEmail)
+			const principal = removeMailtoPrefix(this.principalsStore.getCurrentUserPrincipalEmail)
 			for (const attendee of this.calendarObjectInstance.attendees) {
 				if (removeMailtoPrefix(attendee.uri) === principal) {
 					return attendee
@@ -267,7 +268,7 @@ export default {
 				]
 			}
 
-			return this.$store.getters.sortedCalendars
+			return this.calendarsStore.sortedCalendars
 		},
 		/**
 		 * Returns the object of the selected calendar
@@ -288,7 +289,7 @@ export default {
 				return true
 			}
 
-			return this.$store.getters.sortedCalendars.length > 1
+			return this.calendarsStore.sortedCalendars.length > 1
 		},
 		/**
 		 * Returns whether or not the user is allowed to delete this event

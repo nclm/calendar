@@ -32,6 +32,7 @@ import getTimezoneManager from '../services/timezoneDataProviderService.js'
 import * as AttachmentService from '../services/attachmentService.js'
 import usePrincipalsStore from './principals.js'
 import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
+import useCalendarsStore from './calendars.js'
 
 export default defineStore('settings', {
 	state: () => {
@@ -94,7 +95,6 @@ export default defineStore('settings', {
 	},
 	actions: {
 		/**
-		 * TODO make this work with the eventual new calendars.js
 		 * Updates the user's setting for visibility of birthday calendar
 		 *
 		 * @param {object} vuex The Vuex destructuring object
@@ -104,13 +104,15 @@ export default defineStore('settings', {
 		 * @return {Promise<void>}
 		 */
 		async toggleBirthdayCalendarEnabled({ getters, commit, dispatch }) {
+			const calendarsStore = useCalendarsStore()
+
 			if (getters.hasBirthdayCalendar) {
 				const calendar = getters.getBirthdayCalendar
 				await dispatch('deleteCalendar', { calendar })
 			} else {
 				const davCalendar = await enableBirthdayCalendar()
 				const calendar = mapDavCollectionToCalendar(davCalendar)
-				commit('addCalendar', { calendar })
+				calendarsStore.addCalendarMutation({ calendar })
 			}
 		},
 

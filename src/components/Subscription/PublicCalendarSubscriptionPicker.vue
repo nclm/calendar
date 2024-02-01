@@ -67,7 +67,6 @@
 <script>
 import { NcButton, NcEmptyContent, NcModal } from '@nextcloud/vue'
 import { showError } from '@nextcloud/dialogs'
-import { mapGetters } from 'vuex'
 import CalendarBlank from 'vue-material-design-icons/CalendarBlank.vue'
 
 import { findAllSubscriptions } from '../../services/caldavService.js'
@@ -141,11 +140,6 @@ export default {
 			subscribing,
 			subscriptions: [],
 		}
-	},
-	computed: {
-		...mapGetters([
-			'sortedCalendars',
-		]),
 	},
 	async mounted() {
 		this.subscriptions = await findAllSubscriptions()

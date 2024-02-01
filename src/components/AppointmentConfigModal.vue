@@ -208,7 +208,6 @@ export default {
 	},
 	computed: {
 		...mapGetters([
-			'ownSortedCalendars',
 			'isTalkEnabled',
 		]),
 		...mapStores(useAppointmentConfigsStore, useCalendarsStore),
@@ -247,7 +246,7 @@ export default {
 		},
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
-				this.calendarUrlToUri(this.$store.getters.ownSortedCalendars[0].url),
+				this.calendarUrlToUri(this.calendarsStore.ownSortedCalendars[0].url),
 				this.calendarsStore.scheduleInbox,
 				this.$store.getters.getResolvedTimezone,
 			)

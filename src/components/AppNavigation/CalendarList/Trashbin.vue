@@ -124,6 +124,8 @@ import { showError } from '@nextcloud/dialogs'
 import { mapGetters } from 'vuex'
 import Moment from './Moment.vue'
 import { uidToHexColor } from '../../../utils/color.js'
+import useCalendarsStore from '../../../store/calendars.js'
+import { mapStores } from 'pinia'
 
 import Delete from 'vue-material-design-icons/Delete.vue'
 
@@ -146,15 +148,18 @@ export default {
 		}
 	},
 	computed: {
+		...mapStores({
+			useCalendarsStore,
+		}),
 		...mapGetters({
 			trashBin: 'trashBin',
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
 		calendars() {
-			return this.$store.getters.sortedDeletedCalendars
+			return this.calendarsStore.sortedDeletedCalendars
 		},
 		objects() {
-			return this.$store.getters.deletedCalendarObjects
+			return this.calendarsStore.deletedCalendarObjects
 		},
 		items() {
 			const formattedCalendars = this.calendars.map(calendar => ({

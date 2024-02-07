@@ -37,6 +37,7 @@ import CalendarPicker from '../../Shared/CalendarPicker.vue'
 import { uidToHexColor } from '../../../utils/color.js'
 import usePrincipalsStore from '../../../store/principals.js'
 import useImportFilesStore from '../../../store/importState.js'
+import useCalendarsStore from '../../../store/calendars.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -51,7 +52,7 @@ export default {
 		},
 	},
 	computed: {
-		...mapStores(usePrincipalsStore, useImportFilesStore),
+		...mapStores(usePrincipalsStore, useImportFilesStore, useCalendarsStore),
 		calendar() {
 			let calendarId = this.$store.state.importFiles.importCalendarRelation[this.file.id]
 			if (!calendarId) {
@@ -69,12 +70,12 @@ export default {
 				}
 			}
 
-			return this.$store.getters.getCalendarById(calendarId)
+			return this.calendarsStore.getCalendarById(calendarId)
 		},
 		calendars() {
 			// TODO: remove once the false positive is fixed upstream
 			// eslint-disable-next-line vue/no-side-effects-in-computed-properties
-			const calendars = this.$store.getters.sortedCalendarFilteredByComponents(
+			const calendars = this.calendarsStore.sortedCalendarFilteredByComponents(
 				this.file.parser.containsVEvents(),
 				this.file.parser.containsVJournals(),
 				this.file.parser.containsVTodos()

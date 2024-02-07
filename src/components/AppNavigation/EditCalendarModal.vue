@@ -21,7 +21,7 @@
   -->
 
 <template>
-	<NcModal v-if="!!editCalendarModal && calendar" size="normal" @close="closeModal">
+	<NcModal v-if="!!calendarsStore.editCalendarModal && calendar" size="normal" @close="closeModal">
 		<div class="edit-calendar-modal">
 			<h2>{{ $t('calendar', 'Edit calendar') }}</h2>
 
@@ -93,7 +93,6 @@ import PublishCalendar from './EditCalendarModal/PublishCalendar.vue'
 import SharingSearch from './EditCalendarModal/SharingSearch.vue'
 import ShareItem from './EditCalendarModal/ShareItem.vue'
 import InternalLink from './EditCalendarModal/InternalLink.vue'
-import { mapGetters } from 'vuex'
 import logger from '../../utils/logger.js'
 import DeleteIcon from 'vue-material-design-icons/Delete.vue'
 import DownloadIcon from 'vue-material-design-icons/Download.vue'
@@ -127,15 +126,14 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters(['editCalendarModal']),
 		...mapStores(useCalendarsStore),
 		calendar() {
-			const id = this.editCalendarModal?.calendarId
+			const id = this.calendarsStore.editCalendarModal?.calendarId
 			if (!id) {
 				return undefined
 			}
 
-			return this.$store.getters.getCalendarById(id)
+			return this.calendarsStore.getCalendarById(id)
 		},
 
 		/**

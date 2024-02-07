@@ -210,7 +210,7 @@ export default {
 				return true
 			}
 
-			const calendar = this.$store.getters.getCalendarById(this.calendarObject.calendarId)
+			const calendar = this.calendarsStore.getCalendarById(this.calendarObject.calendarId)
 			if (!calendar) {
 				return true
 			}
@@ -222,7 +222,7 @@ export default {
 				return true
 			}
 
-			const calendar = this.$store.getters.getCalendarById(this.calendarObject.calendarId)
+			const calendar = this.calendarsStore.getCalendarById(this.calendarObject.calendarId)
 			if (!calendar) {
 				return true
 			}
@@ -264,7 +264,7 @@ export default {
 		calendars() {
 			if (this.isReadOnly && this.calendarObject) {
 				return [
-					this.$store.getters.getCalendarById(this.calendarObject.calendarId),
+					this.calendarsStore.getCalendarById(this.calendarObject.calendarId),
 				]
 			}
 
@@ -276,7 +276,7 @@ export default {
 		 * @return {object}
 		 */
 		selectedCalendar() {
-			return this.$store.getters.getCalendarById(this.calendarId)
+			return this.calendarsStore.getCalendarById(this.calendarId)
 		},
 		/**
 		 * Returns whether or not to display the calendar-picker

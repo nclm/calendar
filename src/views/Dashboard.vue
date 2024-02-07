@@ -81,6 +81,7 @@ import { DateTimeValue } from '@nextcloud/calendar-js'
 import { mapGetters } from 'vuex'
 import { mapStores } from 'pinia'
 import useSettingsStore from '../store/settings.js'
+import useCalendarsStore from '../store/calendars.js'
 
 export default {
 	name: 'Dashboard',
@@ -106,7 +107,7 @@ export default {
 		...mapGetters({
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
-		...mapStores(useSettingsStore()),
+		...mapStores(useSettingsStore, useCalendarsStore),
 		/**
 		 * Format loaded events
 		 *
@@ -190,7 +191,7 @@ export default {
 		async fetchExpandedEvents(from, to) {
 			const limit = pLimit(10)
 			const fetchEventPromises = []
-			for (const calendar of this.$store.getters.enabledCalendars) {
+			for (const calendar of this.calendarsStore.enabledCalendars) {
 				fetchEventPromises.push(limit(async () => {
 					let timeRangeId
 					try {

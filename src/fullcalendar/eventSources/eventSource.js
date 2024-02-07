@@ -27,6 +27,7 @@ import { getUnixTimestampFromDate } from '../../utils/date.js'
 import { eventSourceFunction } from './eventSourceFunction.js'
 import logger from '../../utils/logger.js'
 import useFetchedTimeRangesStore from '../../store/fetchedTimeRanges.js'
+import useCalendarsStore from '../../store/calendars.js'
 
 /**
  * Returns a function to generate a FullCalendar event-source based on the Vuex calendar model
@@ -54,11 +55,12 @@ export default function() {
 				// calendar objects inside this time range. New events that were added to a cached
 				// time range externally will not be fetched and have to be added manually.
 				const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+				const calendarsStore = useCalendarsStore()
 				const timeRange = fetchedTimeRangesStore.getTimeRangeForCalendarCoveringRange(calendar.id, getUnixTimestampFromDate(start), getUnixTimestampFromDate(end))
 				if (!timeRange) {
 					let timeRangeId
 					try {
-						timeRangeId = await store.dispatch('getEventsFromCalendarInTimeRange', {
+						timeRangeId = await calendarsStore.getEventsFromCalendarInTimeRange({
 							calendar,
 							from: start,
 							to: end,

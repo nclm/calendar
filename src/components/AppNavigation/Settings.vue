@@ -25,7 +25,7 @@
 		<ul class="settings-fieldset-interior">
 			<SettingsImportSection :is-disabled="loadingCalendars" />
 			<ActionCheckbox class="settings-fieldset-interior-item"
-				:checked="birthdayCalendar"
+				:checked="calendarsStore.hasBirthdayCalendar"
 				:disabled="isBirthdayCalendarDisabled"
 				@update:checked="toggleBirthdayEnabled">
 				{{ $t('calendar', 'Enable birthday calendar') }}
@@ -129,6 +129,7 @@ import {
 } from '@nextcloud/router'
 import { mapStores } from 'pinia'
 import useSettingsStore from '../../store/settings.js'
+import useCalendarsStore from '../../store/calendars.js'
 import moment from '@nextcloud/moment'
 import {
 	showSuccess,
@@ -152,7 +153,6 @@ import { getDefaultAlarms } from '../../defaults/defaultAlarmProvider.js'
 import ClipboardArrowLeftOutline from 'vue-material-design-icons/ClipboardArrowLeftOutline.vue'
 import InformationVariant from 'vue-material-design-icons/InformationVariant.vue'
 import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue'
-import { mapGetters } from 'vuex'
 
 export default {
 	name: 'Settings',
@@ -189,10 +189,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters({
-			birthdayCalendar: 'hasBirthdayCalendar',
-		}),
-		...mapStores(useSettingsStore()),
+		...mapStores(useSettingsStore, useCalendarsStore),
 		isBirthdayCalendarDisabled() {
 			return this.savingBirthdayCalendar || this.loadingCalendars
 		},

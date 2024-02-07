@@ -42,7 +42,7 @@
 				</template>
 
 				<!-- Trashbin -->
-				<Trashbin v-if="hasTrashBin" />
+				<Trashbin v-if="calendarsStore.hasTrashBin" />
 			</template>
 			<!-- Settings and import -->
 			<template #footer>
@@ -138,7 +138,6 @@ export default {
 		...mapStores(useFetchedTimeRangesStore, useCalendarsStore),
 		...mapGetters({
 			timezoneId: 'getResolvedTimezone',
-			hasTrashBin: 'hasTrashBin',
 			currentUserPrincipal: 'getCurrentUserPrincipal',
 		},
 		),

@@ -97,18 +97,14 @@ export default defineStore('settings', {
 		/**
 		 * Updates the user's setting for visibility of birthday calendar
 		 *
-		 * @param {object} vuex The Vuex destructuring object
-		 * @param {object} vuex.getters The Vuex Getters
-		 * @param {Function} vuex.commit The Vuex commit Function
-		 * @param {Function} vuex.dispatch The Vuex dispatch Function
 		 * @return {Promise<void>}
 		 */
-		async toggleBirthdayCalendarEnabled({ getters, commit, dispatch }) {
+		async toggleBirthdayCalendarEnabled() {
 			const calendarsStore = useCalendarsStore()
 
-			if (getters.hasBirthdayCalendar) {
-				const calendar = getters.getBirthdayCalendar
-				await dispatch('deleteCalendar', { calendar })
+			if (calendarsStore.hasBirthdayCalendar) {
+				const calendar = calendarsStore.getBirthdayCalendar
+				await calendarsStore.deleteCalendar({ calendar })
 			} else {
 				const davCalendar = await enableBirthdayCalendar()
 				const calendar = mapDavCollectionToCalendar(davCalendar)

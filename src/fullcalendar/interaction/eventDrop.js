@@ -23,6 +23,7 @@ import { getDurationValueFromFullCalendarDuration } from '../duration.js'
 import getTimezoneManager from '../../services/timezoneDataProviderService.js'
 import logger from '../../utils/logger.js'
 import { getObjectAtRecurrenceId } from '../../utils/calendarObject.js'
+import useCalendarsStore from '../../store/calendars.js'
 
 /**
  * Returns a function to drop an event at a different position
@@ -37,6 +38,8 @@ export default function(store, fcAPI) {
 		const defaultAllDayDuration = getDurationValueFromFullCalendarDuration(fcAPI.getOption('defaultAllDayEventDuration'))
 		const defaultTimedDuration = getDurationValueFromFullCalendarDuration(fcAPI.getOption('defaultTimedEventDuration'))
 		const timezoneId = fcAPI.getOption('timeZone')
+		const calendarsStore = useCalendarsStore()
+
 		let timezone = getTimezoneManager().getTimezoneForId(timezoneId)
 		if (!timezone) {
 			timezone = getTimezoneManager().getTimezoneForId('UTC')
@@ -54,7 +57,7 @@ export default function(store, fcAPI) {
 
 		let calendarObject
 		try {
-			calendarObject = await store.dispatch('getEventByObjectId', { objectId })
+			calendarObject = await calendarsStore.getEventByObjectId({ objectId })
 		} catch (error) {
 			console.debug(error)
 			revert()

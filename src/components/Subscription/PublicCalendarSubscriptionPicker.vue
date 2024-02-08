@@ -73,6 +73,8 @@ import { findAllSubscriptions } from '../../services/caldavService.js'
 import holidayCalendars from '../../resources/holiday_calendars.json'
 import { uidToHexColor } from '../../utils/color.js'
 import { loadState } from '@nextcloud/initial-state'
+import { mapStores } from 'pinia'
+import useCalendarsStore from '../../store/calendars.js'
 
 const isValidString = (str, allowNull = false) => {
 	return typeof str === 'string' || str instanceof String || (allowNull && !str)
@@ -141,6 +143,11 @@ export default {
 			subscriptions: [],
 		}
 	},
+	computed: {
+		...mapStores({
+			useCalendarsStore,
+		}),
+	},
 	async mounted() {
 		this.subscriptions = await findAllSubscriptions()
 		this.subscriptions.map(sub => (this.subscribed[sub.source] = true))
@@ -151,7 +158,7 @@ export default {
 			try {
 				this.subscribing[calendar.source] = true
 
-				await this.$store.dispatch('appendSubscription', {
+				await this.calendarsStore.appendSubscription({
 					displayName: calendar.displayName || calendar.name,
 					color: uidToHexColor(calendar.source),
 					source: calendar.source,

@@ -52,6 +52,7 @@ import debounce from 'debounce'
 import { generateOcsUrl } from '@nextcloud/router'
 import { urldecode } from '../../../utils/url.js'
 import usePrincipalsStore from '../../../store/principals.js'
+import useCalendarsStore from '../../../store/calendars.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -73,7 +74,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useCalendarsStore),
 	},
 	methods: {
 		/**
@@ -87,7 +88,7 @@ export default {
 		 * @param {boolean} data.isCircle is this a circle-group ?
 		 */
 		shareCalendar({ user, displayName, uri, isGroup, isCircle }) {
-			this.$store.dispatch('shareCalendar', {
+			this.calendarsStore.shareCalendar({
 				calendar: this.calendar,
 				user,
 				displayName,

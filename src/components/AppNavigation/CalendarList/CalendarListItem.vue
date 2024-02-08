@@ -235,7 +235,7 @@ export default {
 		 * Cancels the deletion of a calendar
 		 */
 		cancelDeleteCalendar() {
-			this.$store.dispatch('cancelCalendarDeletion', { calendar: this.calendar })
+			this.calendarsStore.cancelCalendarDeletion({ calendar: this.calendar })
 		},
 
 		/**

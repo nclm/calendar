@@ -179,7 +179,7 @@ export default {
 		 */
 		async saveColor() {
 			try {
-				await this.$store.dispatch('changeCalendarColor', {
+				await this.calendarsStore.changeCalendarColor({
 					calendar: this.calendar,
 					newColor: this.calendarColor,
 				})
@@ -197,7 +197,7 @@ export default {
 		 */
 		async saveName() {
 			try {
-				await this.$store.dispatch('renameCalendar', {
+				await this.calendarsStore.renameCalendar({
 					calendar: this.calendar,
 					newName: this.calendarName,
 				})
@@ -234,7 +234,7 @@ export default {
 		 * Deletes or unshares the calendar
 		 */
 		deleteCalendar() {
-			this.$store.dispatch('deleteCalendarAfterTimeout', {
+			this.calendarsStore.deleteCalendarAfterTimeout({
 				calendar: this.calendar,
 			})
 			this.closeModal()

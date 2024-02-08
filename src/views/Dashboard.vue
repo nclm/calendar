@@ -82,6 +82,7 @@ import { mapGetters } from 'vuex'
 import { mapStores } from 'pinia'
 import useSettingsStore from '../store/settings.js'
 import useCalendarsStore from '../store/calendars.js'
+import usePrincipalsStore from '../store/principals.js'
 
 export default {
 	name: 'Dashboard',
@@ -107,7 +108,7 @@ export default {
 		...mapGetters({
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
-		...mapStores(useSettingsStore, useCalendarsStore),
+		...mapStores(useSettingsStore, useCalendarsStore, usePrincipalsStore),
 		/**
 		 * Format loaded events
 		 *
@@ -164,8 +165,8 @@ export default {
 		 */
 		async initializeEnvironment() {
 			await initializeClientForUserView()
-			await this.$store.dispatch('fetchCurrentUserPrincipal')
-			await this.$store.dispatch('loadCollections')
+			await this.principalsStore.fetchCurrentUserPrincipal()
+			await this.calendarsStore.loadCollections()
 
 			const {
 				show_tasks: showTasks,
@@ -195,7 +196,7 @@ export default {
 				fetchEventPromises.push(limit(async () => {
 					let timeRangeId
 					try {
-						timeRangeId = await this.$store.dispatch('getEventsFromCalendarInTimeRange', {
+						timeRangeId = await this.calendarsStore.getEventsFromCalendarInTimeRange({
 							calendar,
 							from,
 							to,

@@ -21,6 +21,7 @@
  */
 import { getDurationValueFromFullCalendarDuration } from '../duration.js'
 import { getObjectAtRecurrenceId } from '../../utils/calendarObject.js'
+import useCalendarsStore from '../../store/calendars.js'
 
 /**
  * Returns a function to resize an event
@@ -32,6 +33,7 @@ export default function(store) {
 	return async function({ event, startDelta, endDelta, revert }) {
 		const startDeltaDuration = getDurationValueFromFullCalendarDuration(startDelta)
 		const endDeltaDuration = getDurationValueFromFullCalendarDuration(endDelta)
+		const calendarsStore = useCalendarsStore()
 
 		if (!startDeltaDuration && !endDeltaDuration) {
 			revert()
@@ -44,7 +46,7 @@ export default function(store) {
 
 		let calendarObject
 		try {
-			calendarObject = await store.dispatch('getEventByObjectId', { objectId })
+			calendarObject = await calendarsStore.getEventByObjectId({ objectId })
 		} catch (error) {
 			console.debug(error)
 			revert()

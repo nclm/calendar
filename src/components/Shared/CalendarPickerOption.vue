@@ -68,14 +68,14 @@ export default {
 		},
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore),
 		/**
 		 * Get the principal object of the calendar's owner
 		 *
 		 * @return {null | object}
 		 */
 		principal() {
-			return this.$store.getters.getPrincipalByUrl(this.owner)
+			return this.principalsStore.getPrincipalByUrl(this.owner)
 		},
 		/**
 		 * Gets the user-id of the calendar's owner

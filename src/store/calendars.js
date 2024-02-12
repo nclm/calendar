@@ -53,10 +53,11 @@ import useImportFilesStore from './importFiles.js'
 import useSettingsStore from './settings.js'
 import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
 import usePrincipalsStore from './principals.js'
+import useCalendarObjectsStore from './calendarObjects.js'
 
 import { defineStore } from 'pinia'
 
-export default defineStore('davRestrictions', {
+export default defineStore('calendars', {
 	state: () => {
 		return {
 			calendars: [],
@@ -443,6 +444,7 @@ export default defineStore('davRestrictions', {
 
 		async restoreCalendarObject({ vobject }) {
 			const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+			const calendarObjectsStore = useCalendarObjectsStore()
 			await this.trashBin.restore(vobject.uri)
 
 			// Clean up the data locally
@@ -468,7 +470,7 @@ export default defineStore('davRestrictions', {
 			}
 
 			// Trigger calendar refresh
-			commit('incrementModificationCount') /// TODO with eventual new calendarObjects.js
+			calendarObjectsStore.modificationCount++
 		},
 
 		/**
@@ -634,6 +636,7 @@ export default defineStore('davRestrictions', {
 		async getEventsFromCalendarInTimeRange({ calendar, from, to }) {
 			const fetchedTimeRangesStore = useFetchedTimeRangesStore()
 			const settingsStore = useSettingsStore()
+			const calendarObjectsStore = useCalendarObjectsStore()
 
 			this.calendarsById[calendar.id].loading = true
 			const response = await calendar.dav.findByTypeInTimeRange('VEVENT', from, to)
@@ -666,7 +669,7 @@ export default defineStore('davRestrictions', {
 				}
 			}
 
-			context.commit('appendCalendarObjects', { calendarObjects }) /// TODO with eventual new calendarObjects.js
+			calendarObjectsStore.appendCalendarObjectsMutation({ calendarObjects })
 			for (const calendarObjectId of calendarObjectIds) {
 				if (this.calendarsById[calendar.id].calendarObjects.indexOf(calendarObjectId) === -1) {
 					this.calendarsById[calendar.id].calendarObjects.push(calendarObjectId)
@@ -689,10 +692,11 @@ export default defineStore('davRestrictions', {
 		 * @return {Promise<CalendarObject>}
 		 */
 		async getEventByObjectId({ objectId }) {
+			const calendarObjectsStore = useCalendarObjectsStore()
 			// TODO - we should still check if the calendar-object is up to date
 			//  - Just send head and compare etags
-			if (context.getters.getCalendarObjectById(objectId)) { /// TODO with eventual new calendarObjects.js
-				return Promise.resolve(context.getters.getCalendarObjectById(objectId))
+			if (calendarObjectsStore.getCalendarObjectById(objectId)) {
+				return Promise.resolve(calendarObjectsStore.getCalendarObjectById(objectId))
 			}
 
 			// This might throw an exception, but we will leave it up to the methods
@@ -710,7 +714,7 @@ export default defineStore('davRestrictions', {
 			const calendar = this.calendarsById[calendarId]
 			const vObject = await calendar.dav.find(objectFileName)
 			const calendarObject = mapCDavObjectToCalendarObject(vObject, calendar.id)
-			context.commit('appendCalendarObject', { calendarObject })
+			calendarObjectsStore.appendCalendarObjectMutation({ calendarObject })
 			this.addCalendarObjectToCalendarMutation({
 				calendar: {
 					id: calendarId,
@@ -730,6 +734,7 @@ export default defineStore('davRestrictions', {
 			const importFilesStore = useImportFilesStore()
 			const principalsStore = usePrincipalsStore()
 			const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+			const calendarObjectsStore = useCalendarObjectsStore()
 
 			importStateStore.stage = IMPORT_STAGE_IMPORTING
 
@@ -787,7 +792,7 @@ export default defineStore('davRestrictions', {
 						}
 
 						const calendarObject = mapCDavObjectToCalendarObject(davObject, calendarId)
-						context.commit('appendCalendarObject', { calendarObject }) /// TODO with eventual new calendarObjects.js
+						calendarObjectsStore.appendCalendarObject({ calendarObject })
 						this.addCalendarObjectToCalendarMutation({
 							calendar,
 							calendarObjectId: calendarObject.id,

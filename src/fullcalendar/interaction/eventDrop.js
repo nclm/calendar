@@ -24,6 +24,7 @@ import getTimezoneManager from '../../services/timezoneDataProviderService.js'
 import logger from '../../utils/logger.js'
 import { getObjectAtRecurrenceId } from '../../utils/calendarObject.js'
 import useCalendarsStore from '../../store/calendars.js'
+import useCalendarObjectsStore from '../../store/calendarObjects.js'
 
 /**
  * Returns a function to drop an event at a different position
@@ -39,6 +40,7 @@ export default function(store, fcAPI) {
 		const defaultTimedDuration = getDurationValueFromFullCalendarDuration(fcAPI.getOption('defaultTimedEventDuration'))
 		const timezoneId = fcAPI.getOption('timeZone')
 		const calendarsStore = useCalendarsStore()
+		const calendarObjectsStore = useCalendarObjectsStore()
 
 		let timezone = getTimezoneManager().getTimezoneForId(timezoneId)
 		if (!timezone) {
@@ -88,7 +90,7 @@ export default function(store, fcAPI) {
 			// shiftByDuration may throw exceptions in certain cases
 			eventComponent.shiftByDuration(deltaDuration, event.allDay, timezone, defaultAllDayDuration, defaultTimedDuration)
 		} catch (error) {
-			store.commit('resetCalendarObjectToDav', {
+			calendarObjectsStore.resetCalendarObjectToDavMutation({
 				calendarObject,
 			})
 			console.debug(error)
@@ -101,11 +103,11 @@ export default function(store, fcAPI) {
 		}
 
 		try {
-			await store.dispatch('updateCalendarObject', {
+			await calendarObjectsStore.updateCalendarObject({
 				calendarObject,
 			})
 		} catch (error) {
-			store.commit('resetCalendarObjectToDav', {
+			calendarObjectsStore.resetCalendarObjectToDavMutation({
 				calendarObject,
 			})
 			console.debug(error)

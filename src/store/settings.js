@@ -33,6 +33,7 @@ import * as AttachmentService from '../services/attachmentService.js'
 import usePrincipalsStore from './principals.js'
 import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
 import useCalendarsStore from './calendars.js'
+import useCalendarObjectsStore from './calendarObjects.js'
 
 export default defineStore('settings', {
 	state: () => {
@@ -159,13 +160,14 @@ export default defineStore('settings', {
 		 */
 		async toggleTasksEnabled() {
 			const fetchedTimeRangesStore = useFetchedTimeRangesStore()
+			const calendarObjectsStore = useCalendarObjectsStore()
 			const newState = !this.showTasks
 			const value = newState ? 'yes' : 'no'
 
 			await setConfig('showTasks', value)
 			this.showTasks = !this.showTasks
 			fetchedTimeRangesStore.clearFetchedTimeRanges()
-			commit('incrementModificationCount')
+			calendarObjectsStore.modificationCount++
 		},
 
 		/**

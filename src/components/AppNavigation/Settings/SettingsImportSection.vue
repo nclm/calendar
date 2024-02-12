@@ -69,6 +69,7 @@ import Upload from 'vue-material-design-icons/Upload.vue'
 import useImportStateStore from '../../../store/importState.js'
 import useImportFilesStore from '../../../store/importFiles.js'
 import useCalendarsStore from '../../../store/calendars.js'
+import useCalendarObjectsStore from '../../../store/calendarObjects.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -84,7 +85,7 @@ export default {
 		},
 	},
 	computed: {
-		...mapStores(useImportStateStore, useImportFilesStore, useCalendarsStore),
+		...mapStores(useImportStateStore, useImportFilesStore, useCalendarsStore, useCalendarObjectsStore),
 		...mapState({
 			files: state => state.importFiles.importFiles,
 			stage: state => state.importState.stage,
@@ -247,7 +248,7 @@ export default {
 			this.importStateStore.resetState()
 
 			// Once we are done importing, reload the calendar view
-			this.$store.commit('incrementModificationCount')
+			this.calendarObjectsStore.modificationCount++
 
 			this.resetInput()
 		},

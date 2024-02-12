@@ -35,6 +35,7 @@ import { translate as t } from '@nextcloud/l10n'
 import { removeMailtoPrefix } from '../utils/attendee.js'
 import usePrincipalsStore from '../store/principals.js'
 import useCalendarsStore from '../store/calendars.js'
+import useCalendarObjectsStore from '../store/calendarObjects.js'
 import { mapStores } from 'pinia'
 
 /**
@@ -74,7 +75,7 @@ export default {
 			calendarObject: (state) => state.calendarObjectInstance.calendarObject,
 			calendarObjectInstance: (state) => state.calendarObjectInstance.calendarObjectInstance,
 		}),
-		...mapStores(useCalendarsStore, usePrincipalsStore),
+		...mapStores(useCalendarsStore, usePrincipalsStore, useCalendarObjectsStore),
 		eventComponent() {
 			return this.calendarObjectInstance?.eventComponent
 		},
@@ -438,7 +439,7 @@ export default {
 				return
 			}
 
-			this.$store.commit('resetCalendarObjectToDav', {
+			this.calendarObjectsStore.resetCalendarObjectToDavMutation({
 				calendarObject: this.calendarObject,
 			})
 

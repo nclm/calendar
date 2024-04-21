@@ -36,6 +36,7 @@ import { removeMailtoPrefix } from '../utils/attendee.js'
 import usePrincipalsStore from '../store/principals.js'
 import useCalendarsStore from '../store/calendars.js'
 import useCalendarObjectsStore from '../store/calendarObjects.js'
+import useCalendarObjectInstanceStore from '../store/calendarObjectInstance.js'
 import { mapStores } from 'pinia'
 
 /**
@@ -75,7 +76,7 @@ export default {
 			calendarObject: (state) => state.calendarObjectInstance.calendarObject,
 			calendarObjectInstance: (state) => state.calendarObjectInstance.calendarObjectInstance,
 		}),
-		...mapStores(useCalendarsStore, usePrincipalsStore, useCalendarObjectsStore),
+		...mapStores(useCalendarsStore, usePrincipalsStore, useCalendarObjectsStore, useCalendarObjectInstanceStore),
 		eventComponent() {
 			return this.calendarObjectInstance?.eventComponent
 		},
@@ -415,7 +416,12 @@ export default {
 				name: getPrefixedRoute(this.$store.state.route.name, 'CalendarView'),
 				params,
 			})
-			this.$store.commit('resetCalendarObjectInstanceObjectIdAndRecurrenceId')
+
+			this.calendarObjectInstanceStore.isNew = false
+			this.calendarObjectInstanceStore.calendarObject = null
+			this.calendarObjectInstanceStore.calendarObjectInstance = null
+			this.calendarObjectInstanceStore.existingEvent.objectId = null
+			this.calendarObjectInstanceStore.existingEvent.recurrenceId = null
 		},
 		/**
 		 * Closes the editor and returns to normal calendar-view without running any action.
@@ -555,10 +561,8 @@ export default {
 				title = null
 			}
 
-			this.$store.commit('changeTitle', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				title,
-			})
+			this.calendarObjectInstance.eventComponent.title = title
+			this.calendarObjectInstance.title = title
 		},
 		/**
 		 * Updates the description of this event

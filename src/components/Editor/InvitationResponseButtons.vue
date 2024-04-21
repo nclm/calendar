@@ -91,17 +91,18 @@ export default {
 	data() {
 		return {
 			loading: false,
+			attendeeCopy: this.attendee,
 		}
 	},
 	computed: {
 		isAccepted() {
-			return this.attendee.participationStatus === 'ACCEPTED'
+			return this.attendeeCopy.participationStatus === 'ACCEPTED'
 		},
 		isDeclined() {
-			return this.attendee.participationStatus === 'DECLINED'
+			return this.attendeeCopy.participationStatus === 'DECLINED'
 		},
 		isTentative() {
-			return this.attendee.participationStatus === 'TENTATIVE'
+			return this.attendeeCopy.participationStatus === 'TENTATIVE'
 		},
 	},
 	methods: {
@@ -141,10 +142,8 @@ export default {
 		async setParticipationStatus(participationStatus) {
 			this.loading = true
 			try {
-				this.$store.commit('changeAttendeesParticipationStatus', {
-					attendee: this.attendee,
-					participationStatus,
-				})
+				this.attendeeCopy.attendeeProperty.participationStatus = participationStatus
+				this.attendeeCopy.participationStatus = participationStatus
 				// TODO: What about recurring events? Add new buttons like "Accept this and all future"?
 				// Currently, this will only accept a single occurrence.
 				await this.$store.dispatch('saveCalendarObjectInstance', {

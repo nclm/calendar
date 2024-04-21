@@ -329,6 +329,7 @@ import getTimezoneManager from '../services/timezoneDataProviderService.js'
 
 import usePrincipalsStore from '../store/principals.js'
 import { mapStores } from 'pinia'
+import { getClosestCSS3ColorNameForHex, getHexForColorName } from '../utils/color'
 
 export default {
 	name: 'EditSidebar',
@@ -379,7 +380,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore),
 		...mapState({
 			locale: (state) => state.settings.momentLocale,
 			hideEventExport: (state) => state.settings.hideEventExport,
@@ -449,10 +450,8 @@ export default {
 		 * @param {string} accessClass The new access class
 		 */
 		updateAccessClass(accessClass) {
-			this.$store.commit('changeAccessClass', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				accessClass,
-			})
+			this.calendarObjectInstance.eventComponent.accessClass = accessClass
+			this.calendarObjectInstance.accessClass = accessClass
 		},
 		/**
 		 * Updates the status of the event
@@ -460,10 +459,8 @@ export default {
 		 * @param {string} status The new status
 		 */
 		updateStatus(status) {
-			this.$store.commit('changeStatus', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				status,
-			})
+			this.calendarObjectInstance.eventComponent.status = status
+			this.calendarObjectInstance.status = status
 		},
 		/**
 		 * Updates the time-transparency of the event
@@ -471,10 +468,8 @@ export default {
 		 * @param {string} timeTransparency The new time-transparency
 		 */
 		updateTimeTransparency(timeTransparency) {
-			this.$store.commit('changeTimeTransparency', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				timeTransparency,
-			})
+			this.calendarObjectInstance.eventComponent.timeTransparency = timeTransparency
+			this.calendarObjectInstance.timeTransparency = timeTransparency
 		},
 		/**
 		 * Adds a category to the event
@@ -504,10 +499,26 @@ export default {
 		 * @param {string} customColor The new color
 		 */
 		updateColor(customColor) {
-			this.$store.commit('changeCustomColor', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				customColor,
-			})
+			if (customColor === null) {
+				this.calendarObjectInstance.eventComponent.deleteAllProperties('COLOR')
+				this.calendarObjectInstance.customColor = null
+				return
+			}
+
+			const cssColorName = getClosestCSS3ColorNameForHex(customColor)
+			const hexColorOfCssName = getHexForColorName(cssColorName)
+
+			// Abort if either is undefined
+			if (!cssColorName || !hexColorOfCssName) {
+				console.error('Setting custom color failed')
+				console.error('customColor: ', customColor)
+				console.error('cssColorName: ', cssColorName)
+				console.error('hexColorOfCssName: ', hexColorOfCssName)
+				return
+			}
+
+			this.calendarObjectInstance.eventComponent.color = cssColorName
+			this.calendarObjectInstance.customColor = hexColorOfCssName
 		},
 		/**
 		 * Checks is the calendar event has attendees, but organizer or not

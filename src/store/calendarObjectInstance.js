@@ -21,7 +21,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-import Vue from 'vue'
 import getTimezoneManager from '../services/timezoneDataProviderService.js'
 import {
 	getDateFromDateTimeValue,
@@ -53,470 +52,322 @@ import { generateUrl } from '@nextcloud/router'
 import { updateTalkParticipants } from '../services/talkService.js'
 import useCalendarObjectsStore from './calendarObjects.js'
 
-const state = {
-	isNew: null,
-	calendarObject: null,
-	calendarObjectInstance: null,
-	existingEvent: {
-		objectId: null,
-		recurrenceId: null,
-	},
-}
+import { defineStore } from 'pinia'
 
-const mutations = {
-
-	/**
-	 * Set a calendar-object-instance that will be opened in the editor (existing event)
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObject The calendar-object currently being edited
-	 * @param {object} data.calendarObjectInstance The calendar-object-instance currently being edited
-	 * @param {string} data.objectId The objectId of the calendar-object
-	 * @param {number} data.recurrenceId The recurrence-id of the calendar-object-instance
-	 */
-	setCalendarObjectInstanceForExistingEvent(state, { calendarObject, calendarObjectInstance, objectId, recurrenceId }) {
-		state.isNew = false
-		state.calendarObject = calendarObject
-		state.calendarObjectInstance = calendarObjectInstance
-		state.existingEvent.objectId = objectId
-		state.existingEvent.recurrenceId = recurrenceId
-	},
-
-	/**
-	 * Set a calendar-object-instance that will be opened in the editor (new event)
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObject The calendar-object currently being created
-	 * @param {object} data.calendarObjectInstance The calendar-object-instance currently being crated
-	 */
-	setCalendarObjectInstanceForNewEvent(state, { calendarObject, calendarObjectInstance }) {
-		state.isNew = true
-		state.calendarObject = calendarObject
-		state.calendarObjectInstance = calendarObjectInstance
-		state.existingEvent.objectId = null
-		state.existingEvent.recurrenceId = null
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 */
-	resetCalendarObjectInstanceObjectIdAndRecurrenceId(state) {
-		state.isNew = false
-		state.calendarObject = null
-		state.calendarObjectInstance = null
-		state.existingEvent.objectId = null
-		state.existingEvent.recurrenceId = null
-	},
-
-	/**
-	 * Change the title of the event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.title The new Title
-	 */
-	changeTitle(state, { calendarObjectInstance, title }) {
-		calendarObjectInstance.eventComponent.title = title
-		calendarObjectInstance.title = title
-	},
-
-	/**
-	 * Change the event's start
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {Date} data.startDate New start date to set
-	 */
-	changeStartDate(state, { calendarObjectInstance, startDate }) {
-		calendarObjectInstance.eventComponent.startDate.year = startDate.getFullYear()
-		calendarObjectInstance.eventComponent.startDate.month = startDate.getMonth() + 1
-		calendarObjectInstance.eventComponent.startDate.day = startDate.getDate()
-		calendarObjectInstance.eventComponent.startDate.hour = startDate.getHours()
-		calendarObjectInstance.eventComponent.startDate.minute = startDate.getMinutes()
-		calendarObjectInstance.eventComponent.startDate.second = 0
-
-		const isAllDay = calendarObjectInstance.eventComponent.isAllDay()
-		const endDateObj = calendarObjectInstance.eventComponent.endDate.clone()
-		const startDateObj = calendarObjectInstance.eventComponent.startDate.clone()
-
-		if (isAllDay) {
-			endDateObj.addDuration(DurationValue.fromSeconds(-1 * 60 * 60 * 24))
-
-			if (endDateObj.compare(startDateObj) === -1) {
-				const timezone = getTimezoneManager().getTimezoneForId(endDateObj.timezoneId)
-				calendarObjectInstance.eventComponent.endDate
-					= calendarObjectInstance.eventComponent.startDate.getInTimezone(timezone)
-				calendarObjectInstance.endDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.endDate)
-				calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
-			}
-		} else {
-			if (endDateObj.compare(startDateObj) === -1) {
-				const timezone = getTimezoneManager().getTimezoneForId(endDateObj.timezoneId)
-				calendarObjectInstance.eventComponent.endDate
-					= calendarObjectInstance.eventComponent.startDate.getInTimezone(timezone)
-				calendarObjectInstance.endDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.endDate)
-			}
-		}
-
-		calendarObjectInstance.startDate = startDate
-	},
-
-	/**
-	 * Change the timezone of the event's start
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.startTimezone New timezone to set for start
-	 */
-	changeStartTimezone(state, { calendarObjectInstance, startTimezone }) {
-		const timezone = getTimezoneManager().getTimezoneForId(startTimezone)
-		calendarObjectInstance.eventComponent.startDate.replaceTimezone(timezone)
-		calendarObjectInstance.startTimezoneId = startTimezone
-
-		// Either both are floating or both have a timezone, but it can't be mixed
-		if (startTimezone === 'floating' || calendarObjectInstance.endTimezoneId === 'floating') {
-			calendarObjectInstance.eventComponent.endDate.replaceTimezone(timezone)
-			calendarObjectInstance.endTimezoneId = startTimezone
+export defineStore('calendarObjectInstance', {
+	state: () => {
+		return {
+			isNew: null,
+			calendarObject: null,
+			calendarObjectInstance: null,
+			existingEvent: {
+				objectId: null,
+				recurrenceId: null,
+			},
 		}
 	},
+	actions: {
+		/** TODO
+		 * Set a calendar-object-instance that will be opened in the editor (new event)
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObject The calendar-object currently being created
+		 * @param {object} data.calendarObjectInstance The calendar-object-instance currently being crated
+		 */
+		setCalendarObjectInstanceForNewEvent({ calendarObject, calendarObjectInstance }) {
+			this.isNew = true
+			this.calendarObject = calendarObject
+			this.calendarObjectInstance = calendarObjectInstance
+			this.existingEvent.objectId = null
+			this.existingEvent.recurrenceId = null
+		},
 
-	/**
-	 * Change the event's end
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {Date} data.endDate New end date to set
-	 */
-	changeEndDate(state, { calendarObjectInstance, endDate }) {
-		// If the event is using DURATION, endDate is dynamically generated.
-		// In order to alter it, we need to explicitly set DTEND
-		const endDateObject = calendarObjectInstance.eventComponent.endDate
-		calendarObjectInstance.eventComponent.endDate = endDateObject
+		/** TODO
+		 * Change the event's start
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {Date} data.startDate New start date to set
+		 */
+		changeStartDate({ calendarObjectInstance, startDate }) {
+			calendarObjectInstance.eventComponent.startDate.year = startDate.getFullYear()
+			calendarObjectInstance.eventComponent.startDate.month = startDate.getMonth() + 1
+			calendarObjectInstance.eventComponent.startDate.day = startDate.getDate()
+			calendarObjectInstance.eventComponent.startDate.hour = startDate.getHours()
+			calendarObjectInstance.eventComponent.startDate.minute = startDate.getMinutes()
+			calendarObjectInstance.eventComponent.startDate.second = 0
 
-		calendarObjectInstance.eventComponent.endDate.year = endDate.getFullYear()
-		calendarObjectInstance.eventComponent.endDate.month = endDate.getMonth() + 1
-		calendarObjectInstance.eventComponent.endDate.day = endDate.getDate()
-		calendarObjectInstance.eventComponent.endDate.hour = endDate.getHours()
-		calendarObjectInstance.eventComponent.endDate.minute = endDate.getMinutes()
-		calendarObjectInstance.eventComponent.endDate.second = 0
+			const isAllDay = calendarObjectInstance.eventComponent.isAllDay()
+			const endDateObj = calendarObjectInstance.eventComponent.endDate.clone()
+			const startDateObj = calendarObjectInstance.eventComponent.startDate.clone()
 
-		const isAllDay = calendarObjectInstance.eventComponent.isAllDay()
-		const endDateObj = calendarObjectInstance.eventComponent.endDate.clone()
-		const startDateObj = calendarObjectInstance.eventComponent.startDate.clone()
+			if (isAllDay) {
+				endDateObj.addDuration(DurationValue.fromSeconds(-1 * 60 * 60 * 24))
 
-		if (isAllDay) {
-			if (endDateObj.compare(startDateObj) === -1) {
-				const timezone = getTimezoneManager().getTimezoneForId(startDateObj.timezoneId)
-				calendarObjectInstance.eventComponent.startDate
-					= calendarObjectInstance.eventComponent.endDate.getInTimezone(timezone)
-				calendarObjectInstance.startDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.startDate)
+				if (endDateObj.compare(startDateObj) === -1) {
+					const timezone = getTimezoneManager().getTimezoneForId(endDateObj.timezoneId)
+					calendarObjectInstance.eventComponent.endDate
+						= calendarObjectInstance.eventComponent.startDate.getInTimezone(timezone)
+					calendarObjectInstance.endDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.endDate)
+					calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
+				}
+			} else {
+				if (endDateObj.compare(startDateObj) === -1) {
+					const timezone = getTimezoneManager().getTimezoneForId(endDateObj.timezoneId)
+					calendarObjectInstance.eventComponent.endDate
+						= calendarObjectInstance.eventComponent.startDate.getInTimezone(timezone)
+					calendarObjectInstance.endDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.endDate)
+				}
 			}
 
-			// endDate is inclusive, but DTEND needs to be exclusive, so always add one day
-			calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
-		} else {
-			// Is end before start?
-			if (endDateObj.compare(startDateObj) === -1) {
-				// Is end more than one day before start?
-				endDateObj.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
+			calendarObjectInstance.startDate = startDate
+		},
+
+		/** TODO
+		 * Change the timezone of the event's start
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {string} data.startTimezone New timezone to set for start
+		 */
+		changeStartTimezoneMutation({ calendarObjectInstance, startTimezone }) {
+			const timezone = getTimezoneManager().getTimezoneForId(startTimezone)
+			calendarObjectInstance.eventComponent.startDate.replaceTimezone(timezone)
+			calendarObjectInstance.startTimezoneId = startTimezone
+
+			// Either both are floating or both have a timezone, but it can't be mixed
+			if (startTimezone === 'floating' || calendarObjectInstance.endTimezoneId === 'floating') {
+				calendarObjectInstance.eventComponent.endDate.replaceTimezone(timezone)
+				calendarObjectInstance.endTimezoneId = startTimezone
+			}
+		},
+
+		/** TODO
+		 * Change the event's end
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {Date} data.endDate New end date to set
+		 */
+		changeEndDate({ calendarObjectInstance, endDate }) {
+			// If the event is using DURATION, endDate is dynamically generated.
+			// In order to alter it, we need to explicitly set DTEND
+			const endDateObject = calendarObjectInstance.eventComponent.endDate
+			calendarObjectInstance.eventComponent.endDate = endDateObject
+
+			calendarObjectInstance.eventComponent.endDate.year = endDate.getFullYear()
+			calendarObjectInstance.eventComponent.endDate.month = endDate.getMonth() + 1
+			calendarObjectInstance.eventComponent.endDate.day = endDate.getDate()
+			calendarObjectInstance.eventComponent.endDate.hour = endDate.getHours()
+			calendarObjectInstance.eventComponent.endDate.minute = endDate.getMinutes()
+			calendarObjectInstance.eventComponent.endDate.second = 0
+
+			const isAllDay = calendarObjectInstance.eventComponent.isAllDay()
+			const endDateObj = calendarObjectInstance.eventComponent.endDate.clone()
+			const startDateObj = calendarObjectInstance.eventComponent.startDate.clone()
+
+			if (isAllDay) {
 				if (endDateObj.compare(startDateObj) === -1) {
 					const timezone = getTimezoneManager().getTimezoneForId(startDateObj.timezoneId)
 					calendarObjectInstance.eventComponent.startDate
 						= calendarObjectInstance.eventComponent.endDate.getInTimezone(timezone)
 					calendarObjectInstance.startDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.startDate)
-				} else {
-					// add one day to endDate if the endDate is before the startDate which allows to easily create events that reach over or to 0:00
-					calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
-					endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000)
+				}
+
+				// endDate is inclusive, but DTEND needs to be exclusive, so always add one day
+				calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
+			} else {
+				// Is end before start?
+				if (endDateObj.compare(startDateObj) === -1) {
+					// Is end more than one day before start?
+					endDateObj.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
+					if (endDateObj.compare(startDateObj) === -1) {
+						const timezone = getTimezoneManager().getTimezoneForId(startDateObj.timezoneId)
+						calendarObjectInstance.eventComponent.startDate
+							= calendarObjectInstance.eventComponent.endDate.getInTimezone(timezone)
+						calendarObjectInstance.startDate = getDateFromDateTimeValue(calendarObjectInstance.eventComponent.startDate)
+					} else {
+						// add one day to endDate if the endDate is before the startDate which allows to easily create events that reach over or to 0:00
+						calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
+						endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000)
+					}
 				}
 			}
-		}
 
-		calendarObjectInstance.endDate = endDate
-	},
+			calendarObjectInstance.endDate = endDate
+		},
 
-	/**
-	 * Change the timezone of the event's end
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.endTimezone New timezone to set for end
-	 */
-	changeEndTimezone(state, { calendarObjectInstance, endTimezone }) {
-		const timezone = getTimezoneManager().getTimezoneForId(endTimezone)
-		calendarObjectInstance.eventComponent.endDate.replaceTimezone(timezone)
-		calendarObjectInstance.endTimezoneId = endTimezone
+		/** TODO
+		 * Change the timezone of the event's end
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {string} data.endTimezone New timezone to set for end
+		 */
+		changeEndTimezoneMutation({ calendarObjectInstance, endTimezone }) {
+			const timezone = getTimezoneManager().getTimezoneForId(endTimezone)
+			calendarObjectInstance.eventComponent.endDate.replaceTimezone(timezone)
+			calendarObjectInstance.endTimezoneId = endTimezone
 
-		// Either both are floating or both have a timezone, but it can't be mixed
-		if (endTimezone === 'floating' || calendarObjectInstance.startTimezoneId === 'floating') {
-			calendarObjectInstance.eventComponent.startDate.replaceTimezone(timezone)
-			calendarObjectInstance.startTimezoneId = endTimezone
-		}
-	},
-
-	/**
-	 * Switch from a timed event to allday or vice versa
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 */
-	toggleAllDay(state, { calendarObjectInstance }) {
-		if (!calendarObjectInstance.eventComponent.canModifyAllDay()) {
-			return
-		}
-
-		const isAllDay = calendarObjectInstance.eventComponent.isAllDay()
-		calendarObjectInstance.eventComponent.startDate.isDate = !isAllDay
-		calendarObjectInstance.eventComponent.endDate.isDate = !isAllDay
-		calendarObjectInstance.isAllDay = calendarObjectInstance.eventComponent.isAllDay()
-
-		// isAllDay = old value
-		if (isAllDay) {
-			calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(-1 * 60 * 60 * 24))
-		} else {
-			calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
-		}
-	},
-
-	/**
-	 * Changes the time of a timed event to the default values
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 */
-	changeTimeToDefaultForTimedEvents(state, { calendarObjectInstance }) {
-		const startDate = calendarObjectInstance.eventComponent.startDate
-		const endDate = calendarObjectInstance.eventComponent.endDate
-		if (startDate.hour === 0 && startDate.minute === 0 && endDate.hour === 0 && endDate.minute === 0) {
-			startDate.hour = 10
-			endDate.hour = 11
-
-			calendarObjectInstance.startDate = getDateFromDateTimeValue(startDate)
-			calendarObjectInstance.endDate = getDateFromDateTimeValue(endDate)
-		}
-	},
-
-	/**
-	 * Change the location of an event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.location New location to set
-	 */
-	changeLocation(state, { calendarObjectInstance, location }) {
-		// Special case: delete Apple-specific location property to avoid inconsistencies
-		calendarObjectInstance.eventComponent.deleteAllProperties('X-APPLE-STRUCTURED-LOCATION')
-
-		calendarObjectInstance.eventComponent.location = location
-		calendarObjectInstance.location = location
-	},
-
-	/**
-	 * Change the description of an event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.description New description to set
-	 */
-	changeDescription(state, { calendarObjectInstance, description }) {
-		// To avoid inconsistencies (bug #3863), remove all parameters (e.g., ALTREP) upon modification
-		const descriptionProperty = calendarObjectInstance.eventComponent.getFirstProperty('Description')
-		if (descriptionProperty) {
-			for (const parameter of descriptionProperty.getParametersIterator()) {
-				descriptionProperty.deleteParameter(parameter.name)
+			// Either both are floating or both have a timezone, but it can't be mixed
+			if (endTimezone === 'floating' || calendarObjectInstance.startTimezoneId === 'floating') {
+				calendarObjectInstance.eventComponent.startDate.replaceTimezone(timezone)
+				calendarObjectInstance.startTimezoneId = endTimezone
 			}
-		}
+		},
 
-		// Delete custom description properties
-		calendarObjectInstance.eventComponent.deleteAllProperties('X-ALT-DESC')
+		/** TODO
+		 * Switch from a timed event to allday or vice versa
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 */
+		toggleAllDayMutation({ calendarObjectInstance }) {
+			if (!calendarObjectInstance.eventComponent.canModifyAllDay()) {
+				return
+			}
 
-		calendarObjectInstance.eventComponent.description = description
-		calendarObjectInstance.description = description
-	},
+			const isAllDay = calendarObjectInstance.eventComponent.isAllDay()
+			calendarObjectInstance.eventComponent.startDate.isDate = !isAllDay
+			calendarObjectInstance.eventComponent.endDate.isDate = !isAllDay
+			calendarObjectInstance.isAllDay = calendarObjectInstance.eventComponent.isAllDay()
 
-	/**
-	 * Change the access class of an event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.accessClass New access class to set
-	 */
-	changeAccessClass(state, { calendarObjectInstance, accessClass }) {
-		calendarObjectInstance.eventComponent.accessClass = accessClass
-		calendarObjectInstance.accessClass = accessClass
-	},
+			// isAllDay = old value
+			if (isAllDay) {
+				calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(-1 * 60 * 60 * 24))
+			} else {
+				calendarObjectInstance.eventComponent.endDate.addDuration(DurationValue.fromSeconds(60 * 60 * 24))
+			}
+		},
 
-	/**
-	 * Change the status of an event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.status New status to set
-	 */
-	changeStatus(state, { calendarObjectInstance, status }) {
-		calendarObjectInstance.eventComponent.status = status
-		calendarObjectInstance.status = status
-	},
+		/** TODO
+		 * Change the location of an event
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {string} data.location New location to set
+		 */
+		changeLocation({ calendarObjectInstance, location }) {
+			// Special case: delete Apple-specific location property to avoid inconsistencies
+			calendarObjectInstance.eventComponent.deleteAllProperties('X-APPLE-STRUCTURED-LOCATION')
 
-	/**
-	 * Change the time-transparency of an event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.timeTransparency New time-transparency to set
-	 */
-	changeTimeTransparency(state, { calendarObjectInstance, timeTransparency }) {
-		calendarObjectInstance.eventComponent.timeTransparency = timeTransparency
-		calendarObjectInstance.timeTransparency = timeTransparency
-	},
+			calendarObjectInstance.eventComponent.location = location
+			calendarObjectInstance.location = location
+		},
 
-	/**
-	 * Change the customized color of an event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string | null} data.customColor New color to set
-	 */
-	changeCustomColor(state, { calendarObjectInstance, customColor }) {
-		if (customColor === null) {
-			calendarObjectInstance.eventComponent.deleteAllProperties('COLOR')
-			Vue.set(calendarObjectInstance, 'customColor', null)
-			return
-		}
-
-		const cssColorName = getClosestCSS3ColorNameForHex(customColor)
-		const hexColorOfCssName = getHexForColorName(cssColorName)
-
-		// Abort if either is undefined
-		if (!cssColorName || !hexColorOfCssName) {
-			console.error('Setting custom color failed')
-			console.error('customColor: ', customColor)
-			console.error('cssColorName: ', cssColorName)
-			console.error('hexColorOfCssName: ', hexColorOfCssName)
-			return
-		}
-
-		calendarObjectInstance.eventComponent.color = cssColorName
-		Vue.set(calendarObjectInstance, 'customColor', hexColorOfCssName)
-	},
-
-	/**
-	 * Adds an attendee to the event and sets the organizer if not present already
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.commonName Displayname of attendee
-	 * @param {string} data.uri Email address of attendee
-	 * @param {string} data.calendarUserType Calendar-user-type of attendee (INDIVIDUAL, GROUP, RESOURCE, ROOM)
-	 * @param {string} data.participationStatus Participation Status of attendee
-	 * @param {string} data.role Role of Attendee
-	 * @param {boolean} data.rsvp Whether or not to request a response from the attendee
-	 * @param {string=} data.language Preferred language of the attendee
-	 * @param {string=} data.timezoneId Preferred timezone of the attendee
-	 * @param {object=} data.organizer Principal of the organizer to be set if not present
-	 */
-	addAttendee(state, { calendarObjectInstance, commonName, uri, calendarUserType = null, participationStatus = null, role = null, rsvp = null, language = null, timezoneId = null, organizer = null, member = null }) {
-		const attendee = AttendeeProperty.fromNameAndEMail(commonName, uri)
-
-		if (calendarUserType !== null) {
-			attendee.userType = calendarUserType
-		}
-		if (participationStatus !== null) {
-			attendee.participationStatus = participationStatus
-		}
-		if (role !== null) {
-			attendee.role = role
-		}
-		if (rsvp !== null) {
-			attendee.rsvp = rsvp
-		}
-		if (language !== null) {
-			attendee.language = language
-		}
-		if (timezoneId !== null) {
-			attendee.updateParameterIfExist('TZID', timezoneId)
-		}
-		if (member !== null) {
-			attendee.updateParameterIfExist('MEMBER', member)
-		}
-
-		// TODO - use real addAttendeeFrom method
-		calendarObjectInstance.eventComponent.addProperty(attendee)
-		calendarObjectInstance.attendees.push({
-			commonName,
-			participationStatus,
-			role,
-			rsvp,
-			uri,
-			attendeeProperty: attendee,
-		})
-
-		if (!calendarObjectInstance.organizer && organizer) {
-			this.commit('setOrganizer', {
-				calendarObjectInstance,
-				commonName: organizer.displayname,
-				email: organizer.emailAddress,
-			})
-		}
-	},
-
-	/**
-	 * Removes an attendee from the event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.attendee The attendee object to remove
-	 */
-	removeAttendee(state, { calendarObjectInstance, attendee }) {
-		calendarObjectInstance.eventComponent.removeAttendee(attendee.attendeeProperty)
-
-		// Also remove members if attendee is a group
-		if (attendee.attendeeProperty.userType === 'GROUP') {
-			attendee.members.forEach(function(member) {
-				calendarObjectInstance.eventComponent.removeAttendee(member.attendeeProperty)
-				const index = calendarObjectInstance.attendees.indexOf(member)
-				if (index !== -1) {
-					calendarObjectInstance.attendees.splice(index, 1)
+		/** TODO
+		 * Change the description of an event
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {string} data.description New description to set
+		 */
+		changeDescription({ calendarObjectInstance, description }) {
+			// To avoid inconsistencies (bug #3863), remove all parameters (e.g., ALTREP) upon modification
+			const descriptionProperty = calendarObjectInstance.eventComponent.getFirstProperty('Description')
+			if (descriptionProperty) {
+				for (const parameter of descriptionProperty.getParametersIterator()) {
+					descriptionProperty.deleteParameter(parameter.name)
 				}
+			}
+
+			// Delete custom description properties
+			calendarObjectInstance.eventComponent.deleteAllProperties('X-ALT-DESC')
+
+			calendarObjectInstance.eventComponent.description = description
+			calendarObjectInstance.description = description
+		},
+
+		/**
+		 * Adds an attendee to the event and sets the organizer if not present already
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {string} data.commonName Displayname of attendee
+		 * @param {string} data.uri Email address of attendee
+		 * @param {string} data.calendarUserType Calendar-user-type of attendee (INDIVIDUAL, GROUP, RESOURCE, ROOM)
+		 * @param {string} data.participationStatus Participation Status of attendee
+		 * @param {string} data.role Role of Attendee
+		 * @param {boolean} data.rsvp Whether or not to request a response from the attendee
+		 * @param {string=} data.language Preferred language of the attendee
+		 * @param {string=} data.timezoneId Preferred timezone of the attendee
+		 * @param {object=} data.organizer Principal of the organizer to be set if not present
+		 */
+		addAttendee({ calendarObjectInstance, commonName, uri, calendarUserType = null, participationStatus = null, role = null, rsvp = null, language = null, timezoneId = null, organizer = null, member = null }) {
+			const attendee = AttendeeProperty.fromNameAndEMail(commonName, uri)
+
+			if (calendarUserType !== null) {
+				attendee.userType = calendarUserType
+			}
+			if (participationStatus !== null) {
+				attendee.participationStatus = participationStatus
+			}
+			if (role !== null) {
+				attendee.role = role
+			}
+			if (rsvp !== null) {
+				attendee.rsvp = rsvp
+			}
+			if (language !== null) {
+				attendee.language = language
+			}
+			if (timezoneId !== null) {
+				attendee.updateParameterIfExist('TZID', timezoneId)
+			}
+			if (member !== null) {
+				attendee.updateParameterIfExist('MEMBER', member)
+			}
+
+			// TODO - use real addAttendeeFrom method
+			calendarObjectInstance.eventComponent.addProperty(attendee)
+			calendarObjectInstance.attendees.push({
+				commonName,
+				participationStatus,
+				role,
+				rsvp,
+				uri,
+				attendeeProperty: attendee,
 			})
-		}
 
-		const index = calendarObjectInstance.attendees.indexOf(attendee)
-		if (index !== -1) {
-			calendarObjectInstance.attendees.splice(index, 1)
-		}
-	},
+			if (!calendarObjectInstance.organizer && organizer) {
+				this.commit('setOrganizer', {
+					calendarObjectInstance,
+					commonName: organizer.displayname,
+					email: organizer.emailAddress,
+				})
+			}
+		},
 
-	/**
-	 * Changes an attendees' participation status
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.attendee The attendee object
-	 * @param {string} data.participationStatus New Participation Status of attendee
-	 */
-	changeAttendeesParticipationStatus(state, { attendee, participationStatus }) {
-		attendee.attendeeProperty.participationStatus = participationStatus
-		attendee.participationStatus = participationStatus
+		/**
+		 * Removes an attendee from the event
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {object} data.attendee The attendee object to remove
+		 */
+		removeAttendee({ calendarObjectInstance, attendee }) {
+			calendarObjectInstance.eventComponent.removeAttendee(attendee.attendeeProperty)
+
+			// Also remove members if attendee is a group
+			if (attendee.attendeeProperty.userType === 'GROUP') {
+				attendee.members.forEach(function(member) {
+					calendarObjectInstance.eventComponent.removeAttendee(member.attendeeProperty)
+					const index = calendarObjectInstance.attendees.indexOf(member)
+					if (index !== -1) {
+						calendarObjectInstance.attendees.splice(index, 1)
+					}
+				})
+			}
+
+			const index = calendarObjectInstance.attendees.indexOf(attendee)
+			if (index !== -1) {
+				calendarObjectInstance.attendees.splice(index, 1)
+			}
+		},
 	},
+})
+
+const mutations = {
 
 	/**
 	 * Changes an attendees' role
@@ -1472,8 +1323,6 @@ const mutations = {
 	},
 }
 
-const getters = {}
-
 const actions = {
 
 	/**
@@ -1537,12 +1386,12 @@ const actions = {
 		}
 
 		const calendarObjectInstance = mapEventComponentToEventObject(eventComponent)
-		commit('setCalendarObjectInstanceForExistingEvent', {
-			calendarObject,
-			calendarObjectInstance,
-			objectId,
-			recurrenceId,
-		})
+
+		this.isNew = false
+		this.calendarObject = calendarObject
+		this.calendarObjectInstance = calendarObjectInstance
+		this.existingEvent.objectId = objectId
+		this.existingEvent.recurrenceId = recurrenceId
 
 		return {
 			calendarObject,
@@ -1594,10 +1443,9 @@ const actions = {
 		// Add default status
 		const rfcProps = getRFCProperties()
 		const status = rfcProps.status.defaultValue
-		commit('changeStatus', {
-			calendarObjectInstance,
-			status,
-		})
+
+		calendarObjectInstance.eventComponent.status = status
+		calendarObjectInstance.status = status
 
 		commit('setCalendarObjectInstanceForNewEvent', {
 			calendarObject,
@@ -2086,7 +1934,15 @@ const actions = {
 				commit('changeStartTimezone', { calendarObjectInstance, startTimezone })
 			}
 
-			commit('changeTimeToDefaultForTimedEvents', { calendarObjectInstance })
+			const startDate = calendarObjectInstance.eventComponent.startDate
+			const endDate = calendarObjectInstance.eventComponent.endDate
+			if (startDate.hour === 0 && startDate.minute === 0 && endDate.hour === 0 && endDate.minute === 0) {
+				startDate.hour = 10
+				endDate.hour = 11
+
+				calendarObjectInstance.startDate = getDateFromDateTimeValue(startDate)
+				calendarObjectInstance.endDate = getDateFromDateTimeValue(endDate)
+			}
 		}
 	},
 

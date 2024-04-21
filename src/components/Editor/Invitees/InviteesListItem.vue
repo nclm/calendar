@@ -117,6 +117,8 @@ import ChevronDown from 'vue-material-design-icons/ChevronDown.vue'
 import ChevronUp from 'vue-material-design-icons/ChevronUp.vue'
 
 import Delete from 'vue-material-design-icons/Delete.vue'
+import { mapStores } from 'pinia'
+import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
 
 export default {
 	name: 'InviteesListItem',
@@ -156,6 +158,7 @@ export default {
 		}
 	},
 	computed: {
+		...mapStores(useCalendarObjectInstanceStore),
 		/**
 		 * @return {string}
 		 */
@@ -217,9 +220,13 @@ export default {
 		 * Toggles the RSVP flag of the attendee
 		 */
 		toggleRSVP() {
-			this.$store.commit('toggleAttendeeRSVP', {
-				attendee: this.attendee,
-			})
+			const oldRSVP = this.calendarObjectInstanceStore.calendarObjectInstance.attendees.where((attendee) => attendee.uri === this.attendee.uri)
+				.attendeeProperty.rsvp
+
+			this.calendarObjectInstanceStore.calendarObjectInstance.attendees.where((attendee) => attendee.uri === this.attendee.uri)
+				.attendeeProperty.rsvp = !oldRSVP
+			this.calendarObjectInstanceStore.calendarObjectInstance.attendees.where((attendee) => attendee.uri === this.attendee.uri)
+				.rsvp = !oldRSVP
 		},
 		/**
 		 * Updates the role of the attendee
@@ -227,10 +234,10 @@ export default {
 		 * @param {string} role The new role of the attendee
 		 */
 		changeRole(role) {
-			this.$store.commit('changeAttendeesRole', {
-				attendee: this.attendee,
-				role,
-			})
+			this.calendarObjectInstanceStore.calendarObjectInstance.attendees.where((attendee) => attendee.uri === this.attendee.uri)
+				.attendeeProperty.role = role
+			this.calendarObjectInstanceStore.calendarObjectInstance.attendees.where((attendee) => attendee.uri === this.attendee.uri)
+				.role = role
 		},
 		/**
 		 * Removes an attendee from the event

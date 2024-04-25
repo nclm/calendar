@@ -364,19 +364,6 @@ export defineStore('calendarObjectInstance', {
 				calendarObjectInstance.attendees.splice(index, 1)
 			}
 		},
-
-		/**
-		 * Changes an attendees' role
-		 *
-		 * @param {object} data The destructuring object
-		 * @param {object} data.attendeeUri The attendeeUri object
-		 * @param {string} data.role New role of attendee
-		 */
-		changeAttendeesRole({ attendeeUri, role }) {
-			let referenceAttendee = this.calendarObjectInstance.attendees.where((attendee) => attendee.uri === attendeeUri)
-			referenceAttendee.attendeeProperty.role = role
-			referenceAttendee.role = role
-		},
 	},
 })
 

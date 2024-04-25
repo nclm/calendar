@@ -80,6 +80,7 @@ import {
 } from '../../../services/attachmentService.js'
 import { parseXML } from 'webdav'
 import usePrincipalsStore from '../../../store/principals.js'
+import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -95,7 +96,7 @@ export default {
 		Plus,
 	},
 	props: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useCalendarObjectInstanceStore),
 		calendarObjectInstance: {
 			type: Object,
 			required: true,
@@ -120,13 +121,13 @@ export default {
 	},
 	methods: {
 		addAttachmentWithProperty(calendarObjectInstance, sharedData) {
-			this.$store.commit('addAttachmentWithProperty', {
+			this.calendarObjectInstanceStore.addAttachmentWithProperty({
 				calendarObjectInstance,
 				sharedData,
 			})
 		},
 		deleteAttachmentFromEvent(attachment) {
-			this.$store.commit('deleteAttachment', {
+			this.calendarObjectInstanceStore.deleteAttachment({
 				calendarObjectInstance: this.calendarObjectInstance,
 				attachment,
 			})

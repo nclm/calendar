@@ -477,10 +477,8 @@ export default {
 		 * @param {string} category Category to add
 		 */
 		addCategory(category) {
-			this.$store.commit('addCategory', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				category,
-			})
+			this.calendarObjectInstance.eventComponent.addCategory(category)
+			this.calendarObjectInstance.categories.push(category)
 		},
 		/**
 		 * Removes a category from the event
@@ -488,10 +486,12 @@ export default {
 		 * @param {string} category Category to remove
 		 */
 		removeCategory(category) {
-			this.$store.commit('removeCategory', {
-				calendarObjectInstance: this.calendarObjectInstance,
-				category,
-			})
+			this.calendarObjectInstance.eventComponent.removeCategory(category)
+
+			const index = this.calendarObjectInstance.categories.indexOf(category)
+			if (index !== -1) {
+				this.calendarObjectInstance.categories.splice(index, 1)
+			}
 		},
 		/**
 		 * Updates the color of the event

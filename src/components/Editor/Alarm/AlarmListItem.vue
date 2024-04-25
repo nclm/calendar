@@ -171,6 +171,9 @@ import Check from 'vue-material-design-icons/Check.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 
+import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
+import { mapStores } from 'pinia'
+
 export default {
 	name: 'AlarmListItem',
 	components: {
@@ -217,6 +220,7 @@ export default {
 		}
 	},
 	computed: {
+		...mapStores(useCalendarObjectInstanceStore),
 		...mapState({
 			locale: (state) => state.settings.momentLocale,
 			forceEventAlarmType: (state) => state.settings.forceEventAlarmType,
@@ -337,8 +341,7 @@ export default {
 		 * @param {string} type The new type of the notification
 		 */
 		changeType(type) {
-			this.$store.commit('changeAlarmType', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeAlarmType({
 				alarm: this.alarm,
 				type,
 			})
@@ -457,8 +460,7 @@ export default {
 		 * @param {Date} date The new date of the alarm
 		 */
 		changeAbsoluteDate(date) {
-			this.$store.commit('changeAlarmAbsoluteDate', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeAlarmAbsoluteDate({
 				alarm: this.alarm,
 				date,
 			})
@@ -469,8 +471,7 @@ export default {
 		 * @param {string} timezoneId The new time zone id of the alarm
 		 */
 		changeAbsoluteTimezoneId(timezoneId) {
-			this.$store.commit('changeAlarmAbsoluteTimezoneId', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeAlarmAbsoluteTimezoneId({
 				alarm: this.alarm,
 				timezoneId,
 			})

@@ -330,11 +330,12 @@ export defineStore('calendarObjectInstance', {
 			})
 
 			if (!calendarObjectInstance.organizer && organizer) {
-				this.commit('setOrganizer', {
-					calendarObjectInstance,
+				calendarObjectInstance.eventComponent.setOrganizerFromNameAndEMail(organizer?.displayname, organizer.emailAddress)
+				calendarObjectInstance.organizer = {
 					commonName: organizer.displayname,
-					email: organizer.emailAddress,
-				})
+					uri: organizer.emailAddress,
+					attendeeProperty: calendarObjectInstance.eventComponent.getFirstProperty('ORGANIZER'),
+				}
 			}
 		},
 
@@ -364,964 +365,602 @@ export defineStore('calendarObjectInstance', {
 				calendarObjectInstance.attendees.splice(index, 1)
 			}
 		},
+
+		/**
+		 * Changes an attendees' participation status
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.attendee The attendee object
+		 * @param {string} data.participationStatus New Participation Status of attendee
+		 */
+		changeAttendeesParticipationStatus({ attendee, participationStatus }) {
+			attendee.attendeeProperty.participationStatus = participationStatus
+			attendee.participationStatus = participationStatus
+		},
+
+		/**
+		 * Changes an attendees' role
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.attendee The attendee object
+		 * @param {string} data.role New role of attendee
+		 */
+		changeAttendeesRole({ attendee, role }) {
+			attendee.attendeeProperty.role = role
+			attendee.role = role
+		},
+
+		/**
+		 * Changes an attendees' RVSP
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.attendee The attendee object
+		 */
+		toggleAttendeeRSVP({ attendee }) {
+			const oldRSVP = attendee.attendeeProperty.rsvp
+			attendee.attendeeProperty.rsvp = !oldRSVP
+			attendee.rsvp = !oldRSVP
+		},
+
+		/**
+		 * Change the interval of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.interval The new interval to set
+		 */
+		changeRecurrenceInterval({ recurrenceRule, interval }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				recurrenceRule.recurrenceRuleValue.interval = interval
+				recurrenceRule.interval = interval
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the frequency of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.frequency The new frequency to set
+		 */
+		changeRecurrenceFrequencyMutation({ recurrenceRule, frequency }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				recurrenceRule.recurrenceRuleValue.frequency = frequency
+				recurrenceRule.frequency = frequency
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+
+		/**
+		 * Change the count limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.count The new count to set
+		 */
+		changeRecurrenceCount({ recurrenceRule, count }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				recurrenceRule.recurrenceRuleValue.count = count
+				recurrenceRule.count = count
+				recurrenceRule.until = null
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {Date} data.until The new until to set
+		 */
+		changeRecurrenceUntil({ recurrenceRule, until }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				// RFC 5545, setion 3.3.10: until must be in UTC if the start time is timezone-aware
+				if (calendarObjectInstance.startTimezoneId !== 'floating') {
+					recurrenceRule.recurrenceRuleValue.until = DateTimeValue.fromJSDate(until, { zone: 'utc' })
+				} else {
+					recurrenceRule.recurrenceRuleValue.until = DateTimeValue.fromJSDate(until)
+				}
+				recurrenceRule.until = until
+				recurrenceRule.count = null
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Changes the recurrence-rule to never end
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 */
+		changeRecurrenceToInfinite({ recurrenceRule }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				recurrenceRule.recurrenceRuleValue.setToInfinite()
+				recurrenceRule.until = null
+				recurrenceRule.count = null
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Reset the By-parts of the recurrence rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 */
+		resetRecurrenceByParts({ recurrenceRule }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				const parts = [
+					'BYSECOND',
+					'BYMINUTE',
+					'BYHOUR',
+					'BYDAY',
+					'BYMONTHDAY',
+					'BYYEARDAY',
+					'BYWEEKNO',
+					'BYMONTH',
+					'BYSETPOS',
+				]
+
+				for (const part of parts) {
+					recurrenceRule.recurrenceRuleValue.setComponent(part, [])
+				}
+
+				recurrenceRule.byDay = []
+				recurrenceRule.byMonth = []
+				recurrenceRule.byMonthDay = []
+				recurrenceRule.bySetPosition = null
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 */
+		setDefaultRecurrenceByPartsForMonthlyBySetPosition({ calendarObjectInstance, recurrenceRule }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				const {
+					byDay,
+					bySetPosition,
+				} = getBySetPositionAndBySetFromDate(calendarObjectInstance.startDate)
+				recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', [byDay])
+				recurrenceRule.recurrenceRuleValue.setComponent('BYSETPOS', [bySetPosition])
+
+				recurrenceRule.byDay.push(byDay)
+				recurrenceRule.bySetPosition = bySetPosition
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.byDay The new until to set
+		 */
+		addByDayToRecurrenceRule({ recurrenceRule, byDay }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYDAY')
+				const index = byDayList.indexOf(byDay)
+				if (index === -1) {
+					byDayList.push(byDay)
+					recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', byDayList)
+				}
+
+				const index2 = recurrenceRule.byDay.indexOf(byDay)
+				if (index2 === -1) {
+					recurrenceRule.byDay.push(byDay)
+				}
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.byDay The new until to set
+		 */
+		removeByDayFromRecurrenceRule({ recurrenceRule, byDay }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYDAY')
+				const index = byDayList.indexOf(byDay)
+				if (index !== -1) {
+					byDayList.splice(index, 1)
+					recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', byDayList)
+				}
+
+				const index2 = recurrenceRule.byDay.indexOf(byDay)
+				if (index2 !== -1) {
+					recurrenceRule.byDay.splice(index2, 1)
+				}
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.byMonthDay The new until to set
+		 */
+		addByMonthDayToRecurrenceRule({ recurrenceRule, byMonthDay }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byMonthDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTHDAY')
+				const index = byMonthDayList.indexOf(byMonthDay)
+				if (index === -1) {
+					byMonthDayList.push(byMonthDay)
+					recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', byMonthDayList)
+				}
+
+				const index2 = recurrenceRule.byMonthDay.indexOf(byMonthDay)
+				if (index2 === -1) {
+					recurrenceRule.byMonthDay.push(byMonthDay)
+				}
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.byMonthDay The new until to set
+		 */
+		removeByMonthDayFromRecurrenceRule({ recurrenceRule, byMonthDay }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byMonthDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTHDAY')
+				const index = byMonthDayList.indexOf(byMonthDay)
+				if (index !== -1) {
+					byMonthDayList.splice(index, 1)
+					recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', byMonthDayList)
+				}
+
+				const index2 = recurrenceRule.byMonthDay.indexOf(byMonthDay)
+				if (index2 !== -1) {
+					recurrenceRule.byMonthDay.splice(index2, 1)
+				}
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.byMonth The new until to set
+		 */
+		addByMonthToRecurrenceRule({ recurrenceRule, byMonth }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				console.debug('addByMonthToRecurrenceRule', byMonth)
+
+				const byMonthList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTH')
+				const index = byMonthList.indexOf(byMonth)
+				if (index === -1) {
+					byMonthList.push(byMonth)
+					recurrenceRule.recurrenceRuleValue.setComponent('BYMONTH', byMonthList)
+				}
+
+				const index2 = recurrenceRule.byMonth.indexOf(byMonth)
+				if (index2 === -1) {
+					recurrenceRule.byMonth.push(byMonth)
+				}
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.byMonth The new until to set
+		 */
+		removeByMonthFromRecurrenceRule({ recurrenceRule, byMonth }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				console.debug('removeByMonthFromRecurrenceRule', byMonth)
+
+				const byMonthList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTH')
+				const index = byMonthList.indexOf(byMonth)
+				if (index !== -1) {
+					byMonthList.splice(index, 1)
+					recurrenceRule.recurrenceRuleValue.setComponent('BYMONTH', byMonthList)
+				}
+
+				const index2 = recurrenceRule.byMonth.indexOf(byMonth)
+				if (index2 !== -1) {
+					recurrenceRule.byMonth.splice(index2, 1)
+				}
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string[]} data.byDay The new until to set
+		 */
+		changeRecurrenceByDay({ recurrenceRule, byDay }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', byDay)
+				recurrenceRule.byDay = byDay
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 * Change the until limit of the recurrence-rule
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 * @param {string} data.bySetPosition The new until to set
+		 */
+		changeRecurrenceBySetPosition({ recurrenceRule, bySetPosition }) {
+			if (recurrenceRule.recurrenceRuleValue) {
+				recurrenceRule.recurrenceRuleValue.setComponent('BYSETPOS', [bySetPosition])
+				recurrenceRule.bySetPosition = bySetPosition
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.recurrenceRule The recurrenceRule object to modify
+		 */
+		markRecurrenceRuleAsSupported({ recurrenceRule }) {
+			recurrenceRule.isUnsupported = false
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.alarm The alarm object
+		 * @param {string} data.type New type of alarm
+		 */
+		changeAlarmType({ alarm, type }) {
+			if (alarm.alarmComponent) {
+				alarm.alarmComponent.action = type
+				alarm.type = type
+
+				console.debug(alarm.alarmComponent.toICALJs().toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.alarm The alarm object
+		 * @param {Date} data.date New date object
+		 */
+		changeAlarmAbsoluteDate({ alarm, date }) {
+			if (alarm.alarmComponent) {
+				alarm.alarmComponent.trigger.value.year = date.getFullYear()
+				alarm.alarmComponent.trigger.value.month = date.getMonth() + 1
+				alarm.alarmComponent.trigger.value.day = date.getDate()
+				alarm.alarmComponent.trigger.value.hour = date.getHours()
+				alarm.alarmComponent.trigger.value.minute = date.getMinutes()
+				alarm.alarmComponent.trigger.value.second = 0
+
+				alarm.absoluteDate = date
+
+				console.debug(alarm.alarmComponent.toICALJs().toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.alarm The alarm object
+		 * @param {string} data.timezoneId New timezoneId
+		 */
+		changeAlarmAbsoluteTimezoneId({ alarm, timezoneId }) {
+			if (alarm.alarmComponent) {
+				const timezone = getTimezoneManager().getTimezoneForId(timezoneId)
+				alarm.alarmComponent.trigger.value.replaceTimezone(timezone)
+
+				alarm.absoluteTimezoneId = timezoneId
+
+				console.debug(alarm.alarmComponent.toICALJs().toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.alarm The alarm object
+		 */
+		updateAlarmAllDayParts({ alarm }) {
+			if (alarm.alarmComponent) {
+				const totalSeconds = alarm.alarmComponent.trigger.value.totalSeconds
+				const allDayParts = getAmountHoursMinutesAndUnitForAllDayEvents(totalSeconds)
+
+				alarm.relativeUnitAllDay = allDayParts.unit
+				alarm.relativeAmountAllDay = allDayParts.amount
+				alarm.relativeHoursAllDay = allDayParts.hours
+				alarm.relativeMinutesAllDay = allDayParts.minutes
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.alarm The alarm object
+		 */
+		updateAlarmTimedParts({ alarm }) {
+			if (alarm.alarmComponent) {
+				const totalSeconds = alarm.alarmComponent.trigger.value.totalSeconds
+				const timedParts = getAmountAndUnitForTimedEvents(totalSeconds)
+
+				alarm.relativeUnitTimed = timedParts.unit
+				alarm.relativeAmountTimed = timedParts.amount
+
+				console.debug(alarm.alarmComponent.toICALJs().toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {string} data.type Type of alarm
+		 * @param {number} data.totalSeconds Total amount of seconds for new alarm
+		 */
+		addAlarmToCalendarObjectInstance({ calendarObjectInstance, type, totalSeconds }) {
+			if (calendarObjectInstance.eventComponent) {
+				const eventComponent = calendarObjectInstance.eventComponent
+
+				const duration = DurationValue.fromSeconds(totalSeconds)
+				const alarmComponent = eventComponent.addRelativeAlarm(type, duration)
+
+				const alarmObject = mapAlarmComponentToAlarmObject(alarmComponent)
+
+				calendarObjectInstance.alarms.push(alarmObject)
+
+				console.debug(alarmObject.alarmComponent.toICALJs().toString())
+			}
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {object} data.alarm The alarm object
+		 */
+		removeAlarmFromCalendarObjectInstance({ calendarObjectInstance, alarm }) {
+			if (alarm.alarmComponent) {
+				calendarObjectInstance.eventComponent.removeAlarm(alarm.alarmComponent)
+
+				const index = calendarObjectInstance.alarms.indexOf(alarm)
+				if (index !== -1) {
+					calendarObjectInstance.alarms.splice(index, 1)
+				}
+			}
+		},
+
+		/**
+		 * @deprecated
+		 * @param calendarObjectInstance
+		 * @param sharedData
+		 */
+		addAttachmentBySharedData({ calendarObjectInstance, sharedData }) {
+			const attachment = AttachmentProperty.fromLink(sharedData.url)
+			const fileName = sharedData.fileName
+
+			// hot-fix needed temporary, because calendar-js has no fileName get-setter
+			const parameterFileName = new Parameter('FILENAME', fileName)
+			// custom has-preview parameter from dav file
+			const xNcHasPreview = new Parameter('X-NC-HAS-PREVIEW', sharedData['has-preview'].toString())
+			// custom file id parameter from dav file
+			const xNcFileId = new Parameter('X-NC-FILE-ID', sharedData.fileid.toString())
+			// custom share-types parameter from dav file
+			const xNcSharedTypes = new Parameter('X-NC-SHARED-TYPES', sharedData['share-types']['share-type']
+				? sharedData['share-types']['share-type'].join(',')
+				: '')
+			attachment.setParameter(parameterFileName)
+			attachment.setParameter(xNcFileId)
+			attachment.setParameter(xNcHasPreview)
+			attachment.setParameter(xNcSharedTypes)
+			attachment.isNew = true
+			attachment.shareTypes = sharedData['share-types']['share-type']
+				? sharedData['share-types']['share-type'].join(',')
+				: ''
+			attachment.fileName = fileName
+			attachment.xNcFileId = sharedData.fileid
+			attachment.xNcHasPreview = sharedData['has-preview']
+			attachment.formatType = sharedData.getcontenttype
+			attachment.uri = sharedData.url ? sharedData.url : generateUrl(`/f/${sharedData.fileid}`)
+
+			calendarObjectInstance.eventComponent.addProperty(attachment)
+			calendarObjectInstance.attachments.push(attachment)
+		},
+
+		/**
+		 *
+		 * @param calendarObjectInstance
+		 * @param sharedData
+		 */
+		addAttachmentWithProperty({ calendarObjectInstance, sharedData }) {
+			const attachment = {}
+			const fileName = sharedData.fileName
+			attachment.isNew = true
+			attachment.shareTypes = (typeof sharedData?.['share-types']?.['share-type'] === 'number'
+				? sharedData?.['share-types']?.['share-type']?.toString()
+				: sharedData?.['share-types']?.['share-type']?.join(',')) ?? null
+			attachment.fileName = fileName
+			attachment.xNcFileId = sharedData.fileid
+			attachment.xNcHasPreview = sharedData['has-preview']
+			attachment.formatType = sharedData.getcontenttype
+			attachment.uri = sharedData.url ? sharedData.url : generateUrl(`/f/${sharedData.fileid}`)
+
+			const attachmentProperty = AttachmentProperty.fromLink(attachment.uri, attachment.formatType)
+			const parameterFileName = new Parameter('FILENAME', fileName)
+			const xNcHasPreview = new Parameter('X-NC-HAS-PREVIEW', attachment.xNcHasPreview.toString())
+			const xNcFileId = new Parameter('X-NC-FILE-ID', attachment.xNcFileId.toString())
+			// ADD X-NC-SHARED-TYPES only if sharet-type not empty
+			if (attachment.shareTypes !== null) {
+				const xNcSharedTypes = new Parameter('X-NC-SHARED-TYPES', attachment.shareTypes)
+				attachmentProperty.setParameter(xNcSharedTypes)
+			}
+
+			attachmentProperty.setParameter(parameterFileName)
+			attachmentProperty.setParameter(xNcFileId)
+			attachmentProperty.setParameter(xNcHasPreview)
+			attachmentProperty.uri = attachment.uri
+
+			attachment.attachmentProperty = attachmentProperty
+
+			calendarObjectInstance.eventComponent.addProperty(attachmentProperty)
+			calendarObjectInstance.attachments.push(attachment)
+		},
+
+		/**
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
+		 * @param {object} data.attachment The attachment object
+		 */
+		deleteAttachment({ calendarObjectInstance, attachment }) {
+			try {
+				const index = calendarObjectInstance.attachments.indexOf(attachment)
+				if (index !== -1) {
+					calendarObjectInstance.attachments.splice(index, 1)
+				}
+				calendarObjectInstance.eventComponent.removeAttachment(attachment.attachmentProperty)
+			} catch {
+			}
+
+		},
 	},
 })
 
-const mutations = {
-
-	/**
-	 * Changes an attendees' role
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.attendee The attendee object
-	 * @param {string} data.role New role of attendee
-	 */
-	changeAttendeesRole(state, { attendee, role }) {
-		attendee.attendeeProperty.role = role
-		attendee.role = role
-	},
-
-	/**
-	 * Changes an attendees' RVSP
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.attendee The attendee object
-	 */
-	toggleAttendeeRSVP(state, { attendee }) {
-		const oldRSVP = attendee.attendeeProperty.rsvp
-		attendee.attendeeProperty.rsvp = !oldRSVP
-		attendee.rsvp = !oldRSVP
-	},
-
-	/**
-	 * Set the event's organizer
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string=} data.commonName Displayname of organizer
-	 * @param {string} data.email Email-address of organizer
-	 */
-	setOrganizer(state, { calendarObjectInstance, commonName = null, email }) {
-		calendarObjectInstance.eventComponent.setOrganizerFromNameAndEMail(commonName, email)
-		Vue.set(calendarObjectInstance, 'organizer', {})
-		Vue.set(calendarObjectInstance.organizer, 'commonName', commonName)
-		Vue.set(calendarObjectInstance.organizer, 'uri', email)
-		Vue.set(calendarObjectInstance.organizer, 'attendeeProperty', calendarObjectInstance.eventComponent.getFirstProperty('ORGANIZER'))
-	},
-
-	/**
-	 * Adds a category to the event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.category Category to add
-	 */
-	addCategory(state, { calendarObjectInstance, category }) {
-		calendarObjectInstance.eventComponent.addCategory(category)
-		calendarObjectInstance.categories.push(category)
-	},
-
-	/**
-	 * Removes a category from the event
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.category Category to remove
-	 */
-	removeCategory(state, { calendarObjectInstance, category }) {
-		calendarObjectInstance.eventComponent.removeCategory(category)
-
-		const index = calendarObjectInstance.categories.indexOf(category)
-		if (index !== -1) {
-			calendarObjectInstance.categories.splice(index, 1)
-		}
-	},
-
-	/**
-	 * Change the interval of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.interval The new interval to set
-	 */
-	changeRecurrenceInterval(state, { calendarObjectInstance, recurrenceRule, interval }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.interval = interval
-			recurrenceRule.interval = interval
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the frequency of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.frequency The new frequency to set
-	 */
-	changeRecurrenceFrequency(state, { calendarObjectInstance, recurrenceRule, frequency }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.frequency = frequency
-			recurrenceRule.frequency = frequency
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the count limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.count The new count to set
-	 */
-	changeRecurrenceCount(state, { calendarObjectInstance, recurrenceRule, count }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.count = count
-			recurrenceRule.count = count
-			recurrenceRule.until = null
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {Date} data.until The new until to set
-	 */
-	changeRecurrenceUntil(state, { calendarObjectInstance, recurrenceRule, until }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			// RFC 5545, setion 3.3.10: until must be in UTC if the start time is timezone-aware
-			if (calendarObjectInstance.startTimezoneId !== 'floating') {
-				recurrenceRule.recurrenceRuleValue.until = DateTimeValue.fromJSDate(until, { zone: 'utc' })
-			} else {
-				recurrenceRule.recurrenceRuleValue.until = DateTimeValue.fromJSDate(until)
-			}
-			recurrenceRule.until = until
-			recurrenceRule.count = null
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Changes the recurrence-rule to never end
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	changeRecurrenceToInfinite(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.setToInfinite()
-			recurrenceRule.until = null
-			recurrenceRule.count = null
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Reset the By-parts of the recurrence rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	resetRecurrenceByParts(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const parts = [
-				'BYSECOND',
-				'BYMINUTE',
-				'BYHOUR',
-				'BYDAY',
-				'BYMONTHDAY',
-				'BYYEARDAY',
-				'BYWEEKNO',
-				'BYMONTH',
-				'BYSETPOS',
-			]
-
-			for (const part of parts) {
-				recurrenceRule.recurrenceRuleValue.setComponent(part, [])
-			}
-
-			Vue.set(recurrenceRule, 'byDay', [])
-			Vue.set(recurrenceRule, 'byMonth', [])
-			Vue.set(recurrenceRule, 'byMonthDay', [])
-			Vue.set(recurrenceRule, 'bySetPosition', null)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Reset the By-parts of the recurrence rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	setDefaultRecurrenceByPartsForWeekly(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byDay = getWeekDayFromDate(calendarObjectInstance.startDate)
-			recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', [byDay])
-			recurrenceRule.byDay.push(byDay)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Reset the By-parts of the recurrence rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	setDefaultRecurrenceByPartsForMonthly(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byMonthDay = calendarObjectInstance.startDate.getDate().toString()
-			recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', [byMonthDay])
-			recurrenceRule.byMonthDay.push(byMonthDay)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	setDefaultRecurrenceByPartsForMonthlyBySetPosition(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const {
-				byDay,
-				bySetPosition,
-			} = getBySetPositionAndBySetFromDate(calendarObjectInstance.startDate)
-			recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', [byDay])
-			recurrenceRule.recurrenceRuleValue.setComponent('BYSETPOS', [bySetPosition])
-
-			recurrenceRule.byDay.push(byDay)
-			recurrenceRule.bySetPosition = bySetPosition
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Reset the By-parts of the recurrence rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	setDefaultRecurrenceByPartsForYearly(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byMonth = calendarObjectInstance.startDate.getMonth() + 1 // Javascript months are zero-based
-			recurrenceRule.recurrenceRuleValue.setComponent('BYMONTH', [byMonth])
-			recurrenceRule.byMonth.push(byMonth)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.byDay The new until to set
-	 */
-	addByDayToRecurrenceRule(state, { calendarObjectInstance, recurrenceRule, byDay }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYDAY')
-			const index = byDayList.indexOf(byDay)
-			if (index === -1) {
-				byDayList.push(byDay)
-				recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', byDayList)
-			}
-
-			const index2 = recurrenceRule.byDay.indexOf(byDay)
-			if (index2 === -1) {
-				recurrenceRule.byDay.push(byDay)
-			}
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.byDay The new until to set
-	 */
-	removeByDayFromRecurrenceRule(state, { calendarObjectInstance, recurrenceRule, byDay }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYDAY')
-			const index = byDayList.indexOf(byDay)
-			if (index !== -1) {
-				byDayList.splice(index, 1)
-				recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', byDayList)
-			}
-
-			const index2 = recurrenceRule.byDay.indexOf(byDay)
-			if (index2 !== -1) {
-				recurrenceRule.byDay.splice(index2, 1)
-			}
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.byMonthDay The new until to set
-	 */
-	addByMonthDayToRecurrenceRule(state, { calendarObjectInstance, recurrenceRule, byMonthDay }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byMonthDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTHDAY')
-			const index = byMonthDayList.indexOf(byMonthDay)
-			if (index === -1) {
-				byMonthDayList.push(byMonthDay)
-				recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', byMonthDayList)
-			}
-
-			const index2 = recurrenceRule.byMonthDay.indexOf(byMonthDay)
-			if (index2 === -1) {
-				recurrenceRule.byMonthDay.push(byMonthDay)
-			}
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.byMonthDay The new until to set
-	 */
-	removeByMonthDayFromRecurrenceRule(state, { calendarObjectInstance, recurrenceRule, byMonthDay }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			const byMonthDayList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTHDAY')
-			const index = byMonthDayList.indexOf(byMonthDay)
-			if (index !== -1) {
-				byMonthDayList.splice(index, 1)
-				recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', byMonthDayList)
-			}
-
-			const index2 = recurrenceRule.byMonthDay.indexOf(byMonthDay)
-			if (index2 !== -1) {
-				recurrenceRule.byMonthDay.splice(index2, 1)
-			}
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.byMonth The new until to set
-	 */
-	addByMonthToRecurrenceRule(state, { calendarObjectInstance, recurrenceRule, byMonth }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			console.debug('addByMonthToRecurrenceRule', byMonth)
-
-			const byMonthList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTH')
-			const index = byMonthList.indexOf(byMonth)
-			if (index === -1) {
-				byMonthList.push(byMonth)
-				recurrenceRule.recurrenceRuleValue.setComponent('BYMONTH', byMonthList)
-			}
-
-			const index2 = recurrenceRule.byMonth.indexOf(byMonth)
-			if (index2 === -1) {
-				recurrenceRule.byMonth.push(byMonth)
-			}
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.byMonth The new until to set
-	 */
-	removeByMonthFromRecurrenceRule(state, { calendarObjectInstance, recurrenceRule, byMonth }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			console.debug('removeByMonthFromRecurrenceRule', byMonth)
-
-			const byMonthList = recurrenceRule.recurrenceRuleValue.getComponent('BYMONTH')
-			const index = byMonthList.indexOf(byMonth)
-			if (index !== -1) {
-				byMonthList.splice(index, 1)
-				recurrenceRule.recurrenceRuleValue.setComponent('BYMONTH', byMonthList)
-			}
-
-			const index2 = recurrenceRule.byMonth.indexOf(byMonth)
-			if (index2 !== -1) {
-				recurrenceRule.byMonth.splice(index2, 1)
-			}
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string[]} data.byDay The new until to set
-	 */
-	changeRecurrenceByDay(state, { calendarObjectInstance, recurrenceRule, byDay }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', byDay)
-			Vue.set(recurrenceRule, 'byDay', byDay)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Change the until limit of the recurrence-rule
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 * @param {string} data.bySetPosition The new until to set
-	 */
-	changeRecurrenceBySetPosition(state, { calendarObjectInstance, recurrenceRule, bySetPosition }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.setComponent('BYSETPOS', [bySetPosition])
-			Vue.set(recurrenceRule, 'bySetPosition', bySetPosition)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	unsetRecurrenceBySetPosition(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			recurrenceRule.recurrenceRuleValue.setComponent('BYSETPOS', [])
-			Vue.set(recurrenceRule, 'bySetPosition', null)
-
-			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
-		}
-	},
-
-	/**
-	 * Remove the recurrence-rule from the calendarObjectInstance
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	removeRecurrenceRuleFromCalendarObjectInstance(state, { calendarObjectInstance, recurrenceRule }) {
-		if (recurrenceRule.recurrenceRuleValue) {
-			calendarObjectInstance.eventComponent.deleteAllProperties('RRULE')
-			Vue.set(calendarObjectInstance, 'recurrenceRule', getDefaultEventObject().recurrenceRule)
-
-			console.debug(calendarObjectInstance)
-			console.debug(recurrenceRule)
-		}
-	},
-
-	/**
-	 * Add a new recurrence-rule to the calendarObjectInstance
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 */
-	addRecurrenceRuleFromCalendarObjectInstance(state, { calendarObjectInstance }) {
-		const recurrenceValue = RecurValue.fromData({})
-		const recurrenceProperty = new Property('RRULE', recurrenceValue)
-		calendarObjectInstance.eventComponent.addProperty(recurrenceProperty)
-		calendarObjectInstance.recurrenceRule.recurrenceRuleValue = recurrenceValue
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.recurrenceRule The recurrenceRule object to modify
-	 */
-	markRecurrenceRuleAsSupported(state, { calendarObjectInstance, recurrenceRule }) {
-		recurrenceRule.isUnsupported = false
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {string} data.type New type of alarm
-	 */
-	changeAlarmType(state, { calendarObjectInstance, alarm, type }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.action = type
-			alarm.type = type
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {number} data.amount New amount of timed event
-	 */
-	changeAlarmAmountTimed(state, { calendarObjectInstance, alarm, amount }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.trigger.value.totalSeconds
-				= getTotalSecondsFromAmountAndUnitForTimedEvents(amount, alarm.relativeUnitTimed, alarm.relativeIsBefore)
-
-			alarm.relativeAmountTimed = amount
-			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {string} data.unit New unit of timed event
-	 */
-	changeAlarmUnitTimed(state, { calendarObjectInstance, alarm, unit }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.trigger.value.totalSeconds
-				= getTotalSecondsFromAmountAndUnitForTimedEvents(alarm.relativeAmountTimed, unit, alarm.relativeIsBefore)
-
-			alarm.relativeUnitTimed = unit
-			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {number} data.amount New amount of all-day event
-	 */
-	changeAlarmAmountAllDay(state, { calendarObjectInstance, alarm, amount }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.trigger.value.totalSeconds
-				= getTotalSecondsFromAmountHourMinutesAndUnitForAllDayEvents(amount,
-					alarm.relativeHoursAllDay, alarm.relativeMinutesAllDay, alarm.relativeUnitAllDay)
-
-			alarm.relativeAmountAllDay = amount
-			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {string} data.unit New Unit of all-day event
-	 */
-	changeAlarmUnitAllDay(state, { calendarObjectInstance, alarm, unit }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.trigger.value.totalSeconds
-				= getTotalSecondsFromAmountHourMinutesAndUnitForAllDayEvents(alarm.relativeAmountAllDay,
-					alarm.relativeHoursAllDay, alarm.relativeMinutesAllDay, unit)
-
-			alarm.relativeUnitAllDay = unit
-			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {number} data.hours New Hour
-	 * @param {number} data.minutes New Minutes
-	 */
-	changeAlarmHoursMinutesAllDay(state, { calendarObjectInstance, alarm, hours, minutes }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.trigger.value.totalSeconds
-				= getTotalSecondsFromAmountHourMinutesAndUnitForAllDayEvents(alarm.relativeAmountAllDay,
-					hours, minutes, alarm.relativeUnitAllDay)
-
-			alarm.relativeHoursAllDay = hours
-			alarm.relativeMinutesAllDay = minutes
-			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {Date} data.date New date object
-	 */
-	changeAlarmAbsoluteDate(state, { calendarObjectInstance, alarm, date }) {
-		if (alarm.alarmComponent) {
-			alarm.alarmComponent.trigger.value.year = date.getFullYear()
-			alarm.alarmComponent.trigger.value.month = date.getMonth() + 1
-			alarm.alarmComponent.trigger.value.day = date.getDate()
-			alarm.alarmComponent.trigger.value.hour = date.getHours()
-			alarm.alarmComponent.trigger.value.minute = date.getMinutes()
-			alarm.alarmComponent.trigger.value.second = 0
-
-			alarm.absoluteDate = date
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 * @param {string} data.timezoneId New timezoneId
-	 */
-	changeAlarmAbsoluteTimezoneId(state, { calendarObjectInstance, alarm, timezoneId }) {
-		if (alarm.alarmComponent) {
-			const timezone = getTimezoneManager().getTimezoneForId(timezoneId)
-			alarm.alarmComponent.trigger.value.replaceTimezone(timezone)
-
-			alarm.absoluteTimezoneId = timezoneId
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 */
-	changeAlarmFromRelativeToAbsolute(state, { calendarObjectInstance, alarm }) {
-		if (alarm.alarmComponent) {
-			const triggerDateTime = calendarObjectInstance.eventComponent.startDate.clone()
-			// The trigger of an alarm must be DATE-TIME, startDate can be either.
-			triggerDateTime.isDate = false
-
-			triggerDateTime.addDuration(alarm.alarmComponent.trigger.value)
-
-			alarm.alarmComponent.setTriggerFromAbsolute(triggerDateTime)
-
-			alarm.absoluteDate = getDateFromDateTimeValue(alarm.alarmComponent.trigger.value)
-			alarm.absoluteTimezoneId = alarm.alarmComponent.trigger.value.timezoneId
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 */
-	changeAlarmFromAbsoluteToRelative(state, { calendarObjectInstance, alarm }) {
-		if (alarm.alarmComponent) {
-			const duration = alarm.alarmComponent.trigger.value
-				.subtractDateWithTimezone(calendarObjectInstance.eventComponent.startDate)
-
-			alarm.alarmComponent.setTriggerFromRelative(duration)
-			alarm.relativeIsBefore = alarm.alarmComponent.trigger.value.isNegative
-			alarm.relativeIsRelatedToStart = true
-			alarm.relativeTrigger = duration.totalSeconds
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.alarm The alarm object
-	 */
-	resetAlarmRelativeParts(state, { alarm }) {
-		alarm.relativeIsBefore = null
-		alarm.relativeIsRelatedToStart = null
-		alarm.relativeUnitTimed = null
-		alarm.relativeAmountTimed = null
-		alarm.relativeUnitAllDay = null
-		alarm.relativeAmountAllDay = null
-		alarm.relativeHoursAllDay = null
-		alarm.relativeMinutesAllDay = null
-		alarm.relativeTrigger = null
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.alarm The alarm object
-	 */
-	resetAlarmAbsoluteParts(state, { alarm }) {
-		alarm.absoluteDate = null
-		alarm.absoluteTimezoneId = null
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 */
-	updateAlarmAllDayParts(state, { calendarObjectInstance, alarm }) {
-		if (alarm.alarmComponent) {
-			const totalSeconds = alarm.alarmComponent.trigger.value.totalSeconds
-			const allDayParts = getAmountHoursMinutesAndUnitForAllDayEvents(totalSeconds)
-
-			alarm.relativeUnitAllDay = allDayParts.unit
-			alarm.relativeAmountAllDay = allDayParts.amount
-			alarm.relativeHoursAllDay = allDayParts.hours
-			alarm.relativeMinutesAllDay = allDayParts.minutes
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 */
-	updateAlarmTimedParts(state, { calendarObjectInstance, alarm }) {
-		if (alarm.alarmComponent) {
-			const totalSeconds = alarm.alarmComponent.trigger.value.totalSeconds
-			const timedParts = getAmountAndUnitForTimedEvents(totalSeconds)
-
-			alarm.relativeUnitTimed = timedParts.unit
-			alarm.relativeAmountTimed = timedParts.amount
-
-			console.debug(alarm.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {string} data.type Type of alarm
-	 * @param {number} data.totalSeconds Total amount of seconds for new alarm
-	 */
-	addAlarmToCalendarObjectInstance(state, { calendarObjectInstance, type, totalSeconds }) {
-		if (calendarObjectInstance.eventComponent) {
-			const eventComponent = calendarObjectInstance.eventComponent
-
-			const duration = DurationValue.fromSeconds(totalSeconds)
-			const alarmComponent = eventComponent.addRelativeAlarm(type, duration)
-
-			const alarmObject = mapAlarmComponentToAlarmObject(alarmComponent)
-
-			calendarObjectInstance.alarms.push(alarmObject)
-
-			console.debug(alarmObject.alarmComponent.toICALJs().toString())
-		}
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.alarm The alarm object
-	 */
-	removeAlarmFromCalendarObjectInstance(state, { calendarObjectInstance, alarm }) {
-		if (alarm.alarmComponent) {
-			calendarObjectInstance.eventComponent.removeAlarm(alarm.alarmComponent)
-
-			const index = calendarObjectInstance.alarms.indexOf(alarm)
-			if (index !== -1) {
-				calendarObjectInstance.alarms.splice(index, 1)
-			}
-		}
-	},
-
-	/**
-	 * @deprecated
-	 * @param state
-	 * @param calendarObjectInstance.calendarObjectInstance
-	 * @param calendarObjectInstance
-	 * @param calendarObjectInstance.sharedData
-	 * @param sharedData
-	 */
-	addAttachmentBySharedData(state, { calendarObjectInstance, sharedData }) {
-		const attachment = AttachmentProperty.fromLink(sharedData.url)
-		const fileName = sharedData.fileName
-
-		// hot-fix needed temporary, becase calendar-js has no fileName get-setter
-		const parameterFileName = new Parameter('FILENAME', fileName)
-		// custom has-preview parameter from dav file
-		const xNcHasPreview = new Parameter('X-NC-HAS-PREVIEW', sharedData['has-preview'].toString())
-		// custom file id parameter from dav file
-		const xNcFileId = new Parameter('X-NC-FILE-ID', sharedData.fileid.toString())
-		// custom share-types parameter from dav file
-		const xNcSharedTypes = new Parameter('X-NC-SHARED-TYPES', sharedData['share-types']['share-type']
-			? sharedData['share-types']['share-type'].join(',')
-			: '')
-	    attachment.setParameter(parameterFileName)
-	    attachment.setParameter(xNcFileId)
-	    attachment.setParameter(xNcHasPreview)
-	    attachment.setParameter(xNcSharedTypes)
-		attachment.isNew = true
-		attachment.shareTypes = sharedData['share-types']['share-type']
-			? sharedData['share-types']['share-type'].join(',')
-			: ''
-		attachment.fileName = fileName
-		attachment.xNcFileId = sharedData.fileid
-		attachment.xNcHasPreview = sharedData['has-preview']
-		attachment.formatType = sharedData.getcontenttype
-		attachment.uri = sharedData.url ? sharedData.url : generateUrl(`/f/${sharedData.fileid}`)
-
-		calendarObjectInstance.eventComponent.addProperty(attachment)
-		calendarObjectInstance.attachments.push(attachment)
-
-		// console.log(attachment)
-	},
-
-	addAttachmentWithProperty(state, { calendarObjectInstance, sharedData }) {
-		const attachment = {}
-		const fileName = sharedData.fileName
-		attachment.isNew = true
-		attachment.shareTypes = (typeof sharedData?.['share-types']?.['share-type'] === 'number'
-			? sharedData?.['share-types']?.['share-type']?.toString()
-			: sharedData?.['share-types']?.['share-type']?.join(',')) ?? null
-		attachment.fileName = fileName
-		attachment.xNcFileId = sharedData.fileid
-		attachment.xNcHasPreview = sharedData['has-preview']
-		attachment.formatType = sharedData.getcontenttype
-		attachment.uri = sharedData.url ? sharedData.url : generateUrl(`/f/${sharedData.fileid}`)
-
-		const attachmentProperty = AttachmentProperty.fromLink(attachment.uri, attachment.formatType)
-		const parameterFileName = new Parameter('FILENAME', fileName)
-		const xNcHasPreview = new Parameter('X-NC-HAS-PREVIEW', attachment.xNcHasPreview.toString())
-		const xNcFileId = new Parameter('X-NC-FILE-ID', attachment.xNcFileId.toString())
-		// ADD X-NC-SHARED-TYPES only if sharet-type not empty
-		if (attachment.shareTypes !== null) {
-			const xNcSharedTypes = new Parameter('X-NC-SHARED-TYPES', attachment.shareTypes)
-			attachmentProperty.setParameter(xNcSharedTypes)
-		}
-
-		attachmentProperty.setParameter(parameterFileName)
-		attachmentProperty.setParameter(xNcFileId)
-		attachmentProperty.setParameter(xNcHasPreview)
-		attachmentProperty.uri = attachment.uri
-
-		attachment.attachmentProperty = attachmentProperty
-
-		calendarObjectInstance.eventComponent.addProperty(attachmentProperty)
-		calendarObjectInstance.attachments.push(attachment)
-	},
-
-	/**
-	 *
-	 * @param {object} state The Vuex state
-	 * @param {object} data The destructuring object
-	 * @param {object} data.calendarObjectInstance The calendarObjectInstance object
-	 * @param {object} data.attachment The attachment object
-	 */
-	deleteAttachment(state, { calendarObjectInstance, attachment }) {
-		try {
-			const index = calendarObjectInstance.attachments.indexOf(attachment)
-			if (index !== -1) {
-				 calendarObjectInstance.attachments.splice(index, 1)
-			}
-			calendarObjectInstance.eventComponent.removeAttachment(attachment.attachmentProperty)
-		} catch {
-		}
-
-	},
-}
 
 const actions = {
 
@@ -1432,7 +1071,7 @@ const actions = {
 		// not, defaultReminder will not be a number (rather the string "none").
 		const defaultReminder = parseInt(settings.state.defaultReminder)
 		if (!isNaN(defaultReminder)) {
-			commit('addAlarmToCalendarObjectInstance', {
+			this.addAlarmToCalendarObjectInstance({
 				calendarObjectInstance,
 				type: 'DISPLAY',
 				totalSeconds: defaultReminder,
@@ -1678,20 +1317,23 @@ const actions = {
 
 		if (recurrenceRule.frequency === 'NONE' && frequency !== 'NONE') {
 			// Add a new recurrence-rule
-			commit('addRecurrenceRuleFromCalendarObjectInstance', { calendarObjectInstance })
-			commit('resetRecurrenceByParts', { calendarObjectInstance, recurrenceRule })
-			commit('changeRecurrenceFrequency', {
+			const recurrenceValue = RecurValue.fromData({})
+			const recurrenceProperty = new Property('RRULE', recurrenceValue)
+			calendarObjectInstance.eventComponent.addProperty(recurrenceProperty)
+			calendarObjectInstance.recurrenceRule.recurrenceRuleValue = recurrenceValue
+
+			this.resetRecurrenceByParts({ recurrenceRule })
+			this.changeRecurrenceFrequencyMutation({
 				calendarObjectInstance,
 				recurrenceRule: calendarObjectInstance.recurrenceRule,
 				frequency,
 			})
-			commit('changeRecurrenceInterval', {
+			this.changeRecurrenceInterval({
 				calendarObjectInstance,
 				recurrenceRule: calendarObjectInstance.recurrenceRule,
 				interval: 1,
 			})
-			commit('changeRecurrenceToInfinite', {
-				calendarObjectInstance,
+			this.changeRecurrenceToInfinite({
 				recurrenceRule: calendarObjectInstance.recurrenceRule,
 			})
 			dispatch('setDefaultRecurrenceByParts', { calendarObjectInstance, recurrenceRule, frequency })
@@ -1700,11 +1342,17 @@ const actions = {
 		} else if (recurrenceRule.frequency !== 'NONE' && frequency === 'NONE') {
 			console.debug('calling removeRecurrenceRuleFromCalendarObjectInstance')
 			// Remove the recurrence-rule
-			commit('removeRecurrenceRuleFromCalendarObjectInstance', { calendarObjectInstance, recurrenceRule })
+			if (recurrenceRule.recurrenceRuleValue) {
+				calendarObjectInstance.eventComponent.deleteAllProperties('RRULE')
+				calendarObjectInstance.recurrenceRule = getDefaultEventObject().recurrenceRule
+
+				console.debug(calendarObjectInstance)
+				console.debug(recurrenceRule)
+			}
 		} else {
 			// Change frequency of existing recurrence-rule
-			commit('resetRecurrenceByParts', { calendarObjectInstance, recurrenceRule })
-			commit('changeRecurrenceFrequency', {
+			this.resetRecurrenceByParts({ recurrenceRule })
+			this.changeRecurrenceFrequencyMutation({
 				calendarObjectInstance,
 				recurrenceRule: calendarObjectInstance.recurrenceRule,
 				frequency,
@@ -1725,15 +1373,33 @@ const actions = {
 	setDefaultRecurrenceByParts({ commit }, { calendarObjectInstance, recurrenceRule, frequency }) {
 		switch (frequency) {
 		case 'WEEKLY':
-			commit('setDefaultRecurrenceByPartsForWeekly', { calendarObjectInstance, recurrenceRule })
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byDay = getWeekDayFromDate(calendarObjectInstance.startDate)
+				recurrenceRule.recurrenceRuleValue.setComponent('BYDAY', [byDay])
+				recurrenceRule.byDay.push(byDay)
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
 			break
 
 		case 'MONTHLY':
-			commit('setDefaultRecurrenceByPartsForMonthly', { calendarObjectInstance, recurrenceRule })
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byMonthDay = calendarObjectInstance.startDate.getDate().toString()
+				recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', [byMonthDay])
+				recurrenceRule.byMonthDay.push(byMonthDay)
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
 			break
 
 		case 'YEARLY':
-			commit('setDefaultRecurrenceByPartsForYearly', { calendarObjectInstance, recurrenceRule })
+			if (recurrenceRule.recurrenceRuleValue) {
+				const byMonth = calendarObjectInstance.startDate.getMonth() + 1 // Javascript months are zero-based
+				recurrenceRule.recurrenceRuleValue.setComponent('BYMONTH', [byMonth])
+				recurrenceRule.byMonth.push(byMonth)
+
+				console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+			}
 			break
 		}
 	},
@@ -1747,8 +1413,7 @@ const actions = {
 	 * @param {object} data2.recurrenceRule The recurrenceRule object to modify
 	 */
 	setRecurrenceToInfinite({ commit }, { calendarObjectInstance, recurrenceRule }) {
-		commit('changeRecurrenceToInfinite', {
-			calendarObjectInstance,
+		this.changeRecurrenceToInfinite({
 			recurrenceRule,
 		})
 	},
@@ -1763,8 +1428,8 @@ const actions = {
 	 */
 	changeMonthlyRecurrenceFromByDayToBySetPosition({ commit }, { calendarObjectInstance, recurrenceRule }) {
 		console.debug('changeMonthlyRecurrenceFromByDayToBySetPosition')
-		commit('resetRecurrenceByParts', { calendarObjectInstance, recurrenceRule })
-		commit('setDefaultRecurrenceByPartsForMonthlyBySetPosition', { calendarObjectInstance, recurrenceRule })
+		this.resetRecurrenceByParts({ recurrenceRule })
+		this.setDefaultRecurrenceByPartsForMonthlyBySetPosition({ calendarObjectInstance, recurrenceRule })
 	},
 
 	/**
@@ -1777,8 +1442,15 @@ const actions = {
 	 */
 	changeMonthlyRecurrenceFromBySetPositionToByDay({ commit }, { calendarObjectInstance, recurrenceRule }) {
 		console.debug('changeMonthlyRecurrenceFromBySetPositionToByDay')
-		commit('resetRecurrenceByParts', { calendarObjectInstance, recurrenceRule })
-		commit('setDefaultRecurrenceByPartsForMonthly', { calendarObjectInstance, recurrenceRule })
+		this.resetRecurrenceByParts({ recurrenceRule })
+
+		if (recurrenceRule.recurrenceRuleValue) {
+			const byMonthDay = calendarObjectInstance.startDate.getDate().toString()
+			recurrenceRule.recurrenceRuleValue.setComponent('BYMONTHDAY', [byMonthDay])
+			recurrenceRule.byMonthDay.push(byMonthDay)
+
+			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+		}
 	},
 
 	/**
@@ -1790,7 +1462,7 @@ const actions = {
 	 * @param {object} data2.recurrenceRule The recurrenceRule object to modify
 	 */
 	enableYearlyRecurrenceBySetPosition({ commit }, { calendarObjectInstance, recurrenceRule }) {
-		commit('setDefaultRecurrenceByPartsForMonthlyBySetPosition', {
+		this.setDefaultRecurrenceByPartsForMonthlyBySetPosition({
 			calendarObjectInstance,
 			recurrenceRule,
 		})
@@ -1810,10 +1482,13 @@ const actions = {
 			recurrenceRule,
 			byDay: [],
 		})
-		commit('unsetRecurrenceBySetPosition', {
-			calendarObjectInstance,
-			recurrenceRule,
-		})
+
+		if (recurrenceRule.recurrenceRuleValue) {
+			recurrenceRule.recurrenceRuleValue.setComponent('BYSETPOS', [])
+			recurrenceRule.bySetPosition = null
+
+			console.debug(recurrenceRule.recurrenceRuleValue._innerValue.toString())
+		}
 	},
 
 	/**
@@ -1863,9 +1538,10 @@ const actions = {
 			break
 		}
 
-		commit('changeRecurrenceToInfinite', { calendarObjectInstance, recurrenceRule })
-		commit('changeRecurrenceUntil', {
-			calendarObjectInstance,
+		this.changeRecurrenceToInfinite({
+			recurrenceRule
+		})
+		this.changeRecurrenceUntil({
 			recurrenceRule,
 			until,
 		})
@@ -1880,49 +1556,129 @@ const actions = {
 	 * @param {object} data2.recurrenceRule The recurrenceRule object to modify
 	 */
 	enableRecurrenceLimitByCount({ commit }, { calendarObjectInstance, recurrenceRule }) {
-		commit('changeRecurrenceToInfinite', { calendarObjectInstance, recurrenceRule })
-		commit('changeRecurrenceCount', {
-			calendarObjectInstance,
+		this.changeRecurrenceToInfinite({
+			recurrenceRule
+		})
+		this.changeRecurrenceCount({
 			recurrenceRule,
 			count: 2, // Default value is two
 		})
 	},
 
 	changeAlarmAmountTimed({ commit }, { calendarObjectInstance, alarm, amount }) {
-		commit('changeAlarmAmountTimed', { calendarObjectInstance, alarm, amount })
-		commit('updateAlarmAllDayParts', { calendarObjectInstance, alarm })
+		if (alarm.alarmComponent) {
+			alarm.alarmComponent.trigger.value.totalSeconds
+				= getTotalSecondsFromAmountAndUnitForTimedEvents(amount, alarm.relativeUnitTimed, alarm.relativeIsBefore)
+
+			alarm.relativeAmountTimed = amount
+			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
+
+			console.debug(alarm.alarmComponent.toICALJs().toString())
+		}
+		this.updateAlarmAllDayParts({ alarm })
 	},
 
 	changeAlarmUnitTimed({ commit }, { calendarObjectInstance, alarm, unit }) {
-		commit('changeAlarmUnitTimed', { calendarObjectInstance, alarm, unit })
-		commit('updateAlarmAllDayParts', { calendarObjectInstance, alarm })
+		if (alarm.alarmComponent) {
+			alarm.alarmComponent.trigger.value.totalSeconds
+				= getTotalSecondsFromAmountAndUnitForTimedEvents(alarm.relativeAmountTimed, unit, alarm.relativeIsBefore)
+
+			alarm.relativeUnitTimed = unit
+			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
+
+			console.debug(alarm.alarmComponent.toICALJs().toString())
+		}
+		this.updateAlarmAllDayParts({ alarm })
 	},
 
 	changeAlarmAmountAllDay({ commit }, { calendarObjectInstance, alarm, amount }) {
-		commit('changeAlarmAmountAllDay', { calendarObjectInstance, alarm, amount })
-		commit('updateAlarmTimedParts', { calendarObjectInstance, alarm })
+		if (alarm.alarmComponent) {
+			alarm.alarmComponent.trigger.value.totalSeconds
+				= getTotalSecondsFromAmountHourMinutesAndUnitForAllDayEvents(amount,
+				alarm.relativeHoursAllDay, alarm.relativeMinutesAllDay, alarm.relativeUnitAllDay)
+
+			alarm.relativeAmountAllDay = amount
+			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
+
+			console.debug(alarm.alarmComponent.toICALJs().toString())
+		}
+
+		this.updateAlarmTimedParts({ alarm })
 	},
 
 	changeAlarmUnitAllDay({ commit }, { calendarObjectInstance, alarm, unit }) {
-		commit('changeAlarmUnitAllDay', { calendarObjectInstance, alarm, unit })
-		commit('updateAlarmTimedParts', { calendarObjectInstance, alarm })
+		if (alarm.alarmComponent) {
+			alarm.alarmComponent.trigger.value.totalSeconds
+				= getTotalSecondsFromAmountHourMinutesAndUnitForAllDayEvents(alarm.relativeAmountAllDay,
+				alarm.relativeHoursAllDay, alarm.relativeMinutesAllDay, unit)
+
+			alarm.relativeUnitAllDay = unit
+			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
+
+			console.debug(alarm.alarmComponent.toICALJs().toString())
+		}
+
+		this.updateAlarmTimedParts({ alarm })
 	},
 
 	changeAlarmHoursMinutesAllDay({ commit }, { calendarObjectInstance, alarm, hours, minutes }) {
-		commit('changeAlarmHoursMinutesAllDay', { calendarObjectInstance, alarm, hours, minutes })
-		commit('updateAlarmTimedParts', { calendarObjectInstance, alarm })
+		if (alarm.alarmComponent) {
+			alarm.alarmComponent.trigger.value.totalSeconds
+				= getTotalSecondsFromAmountHourMinutesAndUnitForAllDayEvents(alarm.relativeAmountAllDay,
+				hours, minutes, alarm.relativeUnitAllDay)
+
+			alarm.relativeHoursAllDay = hours
+			alarm.relativeMinutesAllDay = minutes
+			alarm.relativeTrigger = alarm.alarmComponent.trigger.value.totalSeconds
+
+			console.debug(alarm.alarmComponent.toICALJs().toString())
+		}
+
+		this.updateAlarmTimedParts({ alarm })
 	},
 
 	changeAlarmFromRelativeToAbsolute({ commit }, { calendarObjectInstance, alarm }) {
-		commit('changeAlarmFromRelativeToAbsolute', { calendarObjectInstance, alarm })
-		commit('resetAlarmRelativeParts', { alarm })
+		if (alarm.alarmComponent) {
+			const triggerDateTime = calendarObjectInstance.eventComponent.startDate.clone()
+			// The trigger of an alarm must be DATE-TIME, startDate can be either.
+			triggerDateTime.isDate = false
+
+			triggerDateTime.addDuration(alarm.alarmComponent.trigger.value)
+
+			alarm.alarmComponent.setTriggerFromAbsolute(triggerDateTime)
+
+			alarm.absoluteDate = getDateFromDateTimeValue(alarm.alarmComponent.trigger.value)
+			alarm.absoluteTimezoneId = alarm.alarmComponent.trigger.value.timezoneId
+
+			console.debug(alarm.alarmComponent.toICALJs().toString())
+		}
+
+		alarm.relativeIsBefore = null
+		alarm.relativeIsRelatedToStart = null
+		alarm.relativeUnitTimed = null
+		alarm.relativeAmountTimed = null
+		alarm.relativeUnitAllDay = null
+		alarm.relativeAmountAllDay = null
+		alarm.relativeHoursAllDay = null
+		alarm.relativeMinutesAllDay = null
+		alarm.relativeTrigger = null
 	},
 
 	changeAlarmFromAbsoluteToRelative({ commit }, { calendarObjectInstance, alarm }) {
-		commit('changeAlarmFromAbsoluteToRelative', { calendarObjectInstance, alarm })
-		commit('updateAlarmAllDayParts', { calendarObjectInstance, alarm })
-		commit('updateAlarmTimedParts', { calendarObjectInstance, alarm })
-		commit('resetAlarmAbsoluteParts', { alarm })
+		if (alarm.alarmComponent) {
+			const duration = alarm.alarmComponent.trigger.value
+				.subtractDateWithTimezone(calendarObjectInstance.eventComponent.startDate)
+
+			alarm.alarmComponent.setTriggerFromRelative(duration)
+			alarm.relativeIsBefore = alarm.alarmComponent.trigger.value.isNegative
+			alarm.relativeIsRelatedToStart = true
+			alarm.relativeTrigger = duration.totalSeconds
+		}
+
+		this.updateAlarmAllDayParts({ alarm })
+		this.updateAlarmTimedParts({ alarm })
+		alarm.absoluteDate = null
+		alarm.absoluteTimezoneId = null
 	},
 
 	toggleAllDay({ commit, getters }, { calendarObjectInstance }) {
@@ -1947,5 +1703,3 @@ const actions = {
 	},
 
 }
-
-export default { state, mutations, getters, actions }

@@ -719,7 +719,9 @@ export default {
 					// Probably not though, because it's async
 					try {
 						await vm.loadingCalendars()
-						const recurrenceId = await vm.$store.dispatch('resolveClosestRecurrenceIdForCalendarObject', { objectId, closeToDate })
+						const recurrenceId = await this.calendarObjectInstanceStore.resolveClosestRecurrenceIdForCalendarObject({
+							objectId, closeToDate
+						})
 						const params = Object.assign({}, vm.$route.params, { recurrenceId })
 						vm.$router.replace({ name: vm.$route.name, params })
 					} catch (error) {
@@ -803,7 +805,9 @@ export default {
 			if (recurrenceId === 'next') {
 				const closeToDate = dateFactory()
 				await this.loadingCalendars()
-				const recurrenceId = await this.$store.dispatch('resolveClosestRecurrenceIdForCalendarObject', { objectId, closeToDate })
+				const recurrenceId = await this.calendarObjectInstanceStore.resolveClosestRecurrenceIdForCalendarObject({
+					objectId, closeToDate
+				})
 				const params = Object.assign({}, this.$route.params, { recurrenceId })
 				next({ name: this.$route.name, params })
 				return

@@ -51,6 +51,7 @@ import { getRFCProperties } from '../models/rfcProps.js'
 import { generateUrl } from '@nextcloud/router'
 import { updateTalkParticipants } from '../services/talkService.js'
 import useCalendarObjectsStore from './calendarObjects.js'
+import useCalendarsStore from './calendars.js'
 
 import { defineStore } from 'pinia'
 
@@ -958,40 +959,39 @@ export defineStore('calendarObjectInstance', {
 			}
 
 		},
+
+		//start of actions
+		/**
+		 * Returns the closest existing recurrence-id of a calendar-object
+		 * close to the given date.
+		 * This is either the next occurrence in the future or
+		 * in case there are no more future occurrences the closest
+		 * occurrence in the past
+		 *
+		 * @param {object} data The destructuring object
+		 * @param {string} data.objectId The objectId of the calendar-object to edit
+		 * @param {Date} data.closeToDate The date to get a close occurrence to
+		 * @return {Promise<number>}
+		 */
+		async resolveClosestRecurrenceIdForCalendarObject({ objectId, closeToDate }) {
+			const calendarsStore = useCalendarsStore()
+			const calendarObject = await calendarsStore.getEventByObjectId({ objectId })
+			const iterator = calendarObject.calendarComponent.getVObjectIterator()
+			const firstVObject = iterator.next().value
+
+			const d = DateTimeValue.fromJSDate(closeToDate, true)
+			return firstVObject
+				.recurrenceManager
+				.getClosestOccurrence(d)
+				.getReferenceRecurrenceId()
+				.unixTime
+		},
 	},
 })
 
 
 const actions = {
 
-	/**
-	 * Returns the closest existing recurrence-id of a calendar-object
-	 * close to the given date.
-	 * This is either the next occurrence in the future or
-	 * in case there are no more future occurrences the closest
-	 * occurrence in the past
-	 *
-	 * @param {object} vuex The vuex destructuring object
-	 * @param {object} vuex.state The Vuex state
-	 * @param {Function} vuex.dispatch The Vuex dispatch function
-	 * @param {Function} vuex.commit The Vuex commit function
-	 * @param {object} data The destructuring object
-	 * @param {string} data.objectId The objectId of the calendar-object to edit
-	 * @param {Date} data.closeToDate The date to get a close occurrence to
-	 * @return {Promise<number>}
-	 */
-	async resolveClosestRecurrenceIdForCalendarObject({ state, dispatch, commit }, { objectId, closeToDate }) {
-		const calendarObject = await dispatch('getEventByObjectId', { objectId })
-		const iterator = calendarObject.calendarComponent.getVObjectIterator()
-		const firstVObject = iterator.next().value
-
-		const d = DateTimeValue.fromJSDate(closeToDate, true)
-		return firstVObject
-			.recurrenceManager
-			.getClosestOccurrence(d)
-			.getReferenceRecurrenceId()
-			.unixTime
-	},
 
 	/**
 	 * Gets the calendar-object and calendar-object-instance

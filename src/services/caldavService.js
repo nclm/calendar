@@ -2,6 +2,7 @@
  * @copyright Copyright (c) 2020 Georg Ehrke
  *
  * @author Georg Ehrke <oc.list@georgehrke.com>
+ * @author Richard Steinmetz <richard@steinmetz.cloud>
  *
  * @license AGPL-3.0-or-later
  *
@@ -265,6 +266,17 @@ const findPrincipalByUrl = async (url) => {
 	return getClient().findPrincipal(url)
 }
 
+/**
+ * Finds all principals in a collection at the given URL
+ *
+ * @param {string} url The URL of the principal collection
+ * @param {object} options Passed to cdav-library/Principal::getPropFindList()
+ * @return {Promise<Principal[]>}
+ */
+const findPrincipalsInCollection = async (url, options = {}) => {
+	return getClient().findPrincipalsInCollection(url, options)
+}
+
 export {
 	initializeClientForUserView,
 	initializeClientForPublicView,
@@ -281,4 +293,5 @@ export {
 	principalPropertySearchByDisplaynameOrEmail,
 	advancedPrincipalPropertySearch,
 	findPrincipalByUrl,
+	findPrincipalsInCollection,
 }

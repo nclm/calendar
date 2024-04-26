@@ -2,6 +2,7 @@
  * @copyright Copyright (c) 2019 Georg Ehrke
  *
  * @author Georg Ehrke <oc.list@georgehrke.com>
+ * @author Richard Steinmetz <richard@steinmetz.cloud>
  *
  * @license AGPL-3.0-or-later
  *
@@ -23,12 +24,14 @@ import Vue from 'vue'
 import {
 	findPrincipalByUrl,
 	getCurrentUserPrincipal,
+	findPrincipalsInCollection,
 } from '../services/caldavService.js'
 import logger from '../utils/logger.js'
 import {
 	getDefaultPrincipalObject,
 	mapDavToPrincipal,
 } from '../models/principal.js'
+import { generateRemoteUrl } from '@nextcloud/router'
 
 const state = {
 	principals: [],
@@ -117,6 +120,22 @@ const getters = {
 	 * @return {string|undefined}
 	 */
 	getCurrentUserPrincipalEmail: (state) => state.principalsById[state.currentUserPrincipal]?.emailAddress,
+
+	/**
+	 * Gets all room principals
+	 *
+	 * @param {object} state the store data
+	 * @return {object[]}
+	 */
+	getRoomPrincipals: (state) => state.principals.filter((principal) => principal.isCalendarRoom),
+
+	/**
+	 * Gets all resource principals
+	 *
+	 * @param {object} state the store data
+	 * @return {object[]}
+	 */
+	getResourcePrincipals: (state) => state.principals.filter((principal) => principal.isCalendarResource),
 }
 
 const actions = {
@@ -143,6 +162,35 @@ const actions = {
 		context.commit('addPrincipal', {
 			principal: mapDavToPrincipal(principal),
 		})
+	},
+
+	/**
+	 * Fetches all principals of all rooms and resources from the DAV server and commits it to the state
+	 *
+	 * @param {object} context The vuex context
+	 * @return {Promise<void>}
+	 */
+	async fetchRoomAndResourcePrincipals(context) {
+		const options = {
+			enableCalDAVResourceBooking: true,
+		}
+		const principalCollections = await Promise.all([
+			findPrincipalsInCollection(generateRemoteUrl('dav/principals/calendar-rooms/'), options),
+			findPrincipalsInCollection(generateRemoteUrl('dav/principals/calendar-resources/'), options),
+		])
+		for (const principals of principalCollections) {
+			if (!principals) {
+				// TODO - handle error
+				continue
+			}
+
+			logger.debug('Fetched principals', { principals })
+			for (const principal of principals) {
+				context.commit('addPrincipal', {
+					principal: mapDavToPrincipal(principal),
+				})
+			}
+		}
 	},
 
 	/**

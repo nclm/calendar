@@ -22,6 +22,10 @@
 
 <template>
 	<div class="resource-search">
+		<NcButton @click="openRoomAvailability">
+			{{ t('calendar', 'Check rooms availability') }}
+		</NcButton>
+		<RoomAvailability v-if="showRoomAvailabilityModel" />
 		<NcSelect class="resource-search__multiselect"
 			:options="matches"
 			:searchable="true"
@@ -83,6 +87,7 @@ import {
 	NcActions as Actions,
 	NcActionCheckbox as ActionCheckbox,
 	NcSelect,
+	NcButton,
 } from '@nextcloud/vue'
 import { checkResourceAvailability } from '../../../services/freeBusyService.js'
 import debounce from 'debounce'
@@ -90,11 +95,14 @@ import logger from '../../../utils/logger.js'
 import { advancedPrincipalPropertySearch } from '../../../services/caldavService.js'
 import ResourceSeatingCapacity from './ResourceSeatingCapacity.vue'
 import ResourceRoomType from './ResourceRoomType.vue'
+import RoomAvailability from '../FreeBusy/RoomAvailability.vue'
 
 export default {
 	name: 'ResourceListSearch',
 	components: {
+		RoomAvailability,
 		Avatar,
+		NcButton,
 		NcSelect,
 		ResourceSeatingCapacity,
 		Actions,
@@ -122,6 +130,7 @@ export default {
 			isAccessible: false,
 			hasProjector: false,
 			hasWhiteboard: false,
+			showRoomAvailabilityModel: false,
 		}
 	},
 	computed: {
@@ -146,6 +155,9 @@ export default {
 		},
 	},
 	methods: {
+		openRoomAvailability() {
+			this.showRoomAvailabilityModel = true
+		},
 		findResources: debounce(async function(query) {
 			this.isLoading = true
 			let matches = []

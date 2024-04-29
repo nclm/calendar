@@ -3,7 +3,10 @@
 		:name="t('calendar', 'Availability of rooms')"
 		@close="closeRoomAvailability">
 		<div class="modal__content__header">
-			<h2>{{ $t('calendar', 'Find a room') }}</h2>
+			<h2>{{ t('calendar', 'Find a room') }}</h2>
+			<div v-for="room in rooms" :key="room.id">
+				<p>{{ room.name }}</p>
+			</div>
 		</div>
 	</NcModal>
 </template>
@@ -18,6 +21,11 @@ export default {
 		return {
 			showRoomAvailabilityModel: false,
 		}
+	},
+	computed: {
+		rooms() {
+			return this.$store.getters.getRoomPrincipals
+		},
 	},
 	methods: {
 		closeRoomAvailability() {

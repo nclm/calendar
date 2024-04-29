@@ -34,6 +34,7 @@ import {
 import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
 import useCalendarsStore from './calendars.js'
 import { defineStore } from 'pinia'
+import useCalendarObjectInstanceStore from './calendarObjectInstance.js'
 
 export default defineStore('calendarObjects', {
 	state: () => {
@@ -85,7 +86,6 @@ export default defineStore('calendarObjects', {
 			await calendarObject.dav.move(newCalendar.dav)
 			// Update calendarId in calendarObject manually as it is not stored in dav
 			this.calendarObjects[calendarObject.id].calendarId = newCalendarId
-
 
 			calendarsStore.addCalendarObjectToCalendarMutation({
 				calendar: {
@@ -262,33 +262,33 @@ export default defineStore('calendarObjects', {
 		/**
 		 * Updates the time of the new calendar object
 		 *
-		 * @param {object} data The destructuring object for Vuex
-		 * @param {object} data2 destructuring object
-		 * @param {CalendarObject} data2.calendarObjectInstance Calendar-object to
-		 * @param {number} data2.start Timestamp for start of new event
-		 * @param {number} data2.end Timestamp for end of new event
-		 * @param {string} data2.timezoneId asd
-		 * @param {boolean} data2.isAllDay foo
+		 * @param {object} data destructuring object
+		 * @param {CalendarObject} data.calendarObjectInstance Calendar-object to
+		 * @param {number} data.start Timestamp for start of new event
+		 * @param {number} data.end Timestamp for end of new event
+		 * @param {string} data.timezoneId asd
+		 * @param {boolean} data.isAllDay foo
 		 */
 		updateTimeOfNewEvent({ calendarObjectInstance, start, end, timezoneId, isAllDay }) {
+			const calendarObjectInstanceStore = useCalendarObjectInstanceStore()
 			const isDirty = calendarObjectInstance.eventComponent.isDirty()
 			const startDate = new Date(start * 1000)
 			const endDate = new Date(end * 1000)
 
 			if (calendarObjectInstance.isAllDay !== isAllDay) {
-				commit('toggleAllDay', { calendarObjectInstance }) ///TODO with new calendarObjectInstance
+				calendarObjectInstanceStore.toggleAllDayMutation({ calendarObjectInstance })
 			}
 
-			dispatch('changeStartTimezone', { ///TODO with new calendarObjectInstance
+			calendarObjectInstanceStore.changeStartTimezone({
 				calendarObjectInstance,
 				startTimezone: timezoneId,
 			})
-			dispatch('changeEndTimezone', { ///TODO with new calendarObjectInstance
+			calendarObjectInstanceStore.changeEndTimezone({
 				calendarObjectInstance,
 				endTimezone: timezoneId,
 			})
 
-			commit('changeStartDate', { ///TODO with new calendarObjectInstance
+			calendarObjectInstanceStore.changeStartDateMutation({
 				calendarObjectInstance,
 				startDate,
 			})
@@ -296,12 +296,12 @@ export default defineStore('calendarObjects', {
 			if (isAllDay) {
 				// The full-calendar end date is exclusive, but the end-date
 				// that changeEndDate expects is inclusive, so we have to deduct one day.
-				commit('changeEndDate', { ///TODO with new calendarObjectInstance
+				calendarObjectInstanceStore.changeEndDateMutation({
 					calendarObjectInstance,
 					endDate: new Date(endDate.getTime() - 24 * 60 * 60 * 1000),
 				})
 			} else {
-				commit('changeEndDate', { ///TODO with new calendarObjectInstance
+				calendarObjectInstanceStore.changeEndDateMutation({
 					calendarObjectInstance,
 					endDate,
 				})

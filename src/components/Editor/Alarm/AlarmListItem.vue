@@ -354,7 +354,7 @@ export default {
 				return
 			}
 
-			this.$store.dispatch('changeAlarmFromAbsoluteToRelative', {
+			this.calendarObjectInstanceStore.changeAlarmFromAbsoluteToRelative({
 				calendarObjectInstance: this.calendarObjectInstance,
 				alarm: this.alarm,
 			})
@@ -367,7 +367,7 @@ export default {
 				return
 			}
 
-			this.$store.dispatch('changeAlarmFromRelativeToAbsolute', {
+			this.calendarObjectInstanceStore.changeAlarmFromRelativeToAbsolute({
 				calendarObjectInstance: this.calendarObjectInstance,
 				alarm: this.alarm,
 			})
@@ -389,8 +389,7 @@ export default {
 			const selectedValue = parseInt(event.target.value, 10)
 
 			if (selectedValue >= minimumValue && selectedValue <= maximumValue) {
-				this.$store.dispatch('changeAlarmAmountTimed', {
-					calendarObjectInstance: this.calendarObjectInstance,
+				this.calendarObjectInstanceStore.changeAlarmAmountTimed({
 					alarm: this.alarm,
 					amount: selectedValue,
 				})
@@ -402,8 +401,7 @@ export default {
 		 * @param {string} unit The new unit
 		 */
 		changeRelativeUnitTimed(unit) {
-			this.$store.dispatch('changeAlarmUnitTimed', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeAlarmUnitTimed({
 				alarm: this.alarm,
 				unit,
 			})
@@ -419,8 +417,7 @@ export default {
 			const selectedValue = parseInt(event.target.value, 10)
 
 			if (selectedValue >= minimumValue && selectedValue <= maximumValue) {
-				this.$store.dispatch('changeAlarmAmountAllDay', {
-					calendarObjectInstance: this.calendarObjectInstance,
+				this.calendarObjectInstanceStore.changeAlarmAmountAllDay({
 					alarm: this.alarm,
 					amount: selectedValue,
 				})
@@ -432,8 +429,7 @@ export default {
 		 * @param {string} unit The new unit
 		 */
 		changeRelativeUnitAllDay(unit) {
-			this.$store.dispatch('changeAlarmUnitAllDay', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeAlarmUnitAllDay({
 				alarm: this.alarm,
 				unit,
 			})
@@ -447,8 +443,7 @@ export default {
 			const hours = date.getHours()
 			const minutes = date.getMinutes()
 
-			this.$store.dispatch('changeAlarmHoursMinutesAllDay', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeAlarmHoursMinutesAllDay({
 				alarm: this.alarm,
 				hours,
 				minutes,

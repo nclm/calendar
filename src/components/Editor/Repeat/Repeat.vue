@@ -351,7 +351,7 @@ export default {
 		 * to the selection of a relative position within the month
 		 */
 		changeToBySetPositionMonthly() {
-			this.$store.dispatch('changeMonthlyRecurrenceFromByDayToBySetPosition', {
+			this.calendarObjectInstanceStore.changeMonthlyRecurrenceFromByDayToBySetPosition({
 				calendarObjectInstance: this.calendarObjectInstance,
 				recurrenceRule: this.recurrenceRule,
 			})
@@ -362,7 +362,7 @@ export default {
 		 * to the selection of monthdays
 		 */
 		changeToByDayMonthly() {
-			this.$store.dispatch('changeMonthlyRecurrenceFromBySetPositionToByDay', {
+			this.calendarObjectInstanceStore.changeMonthlyRecurrenceFromBySetPositionToByDay({
 				calendarObjectInstance: this.calendarObjectInstance,
 				recurrenceRule: this.recurrenceRule,
 			})
@@ -372,7 +372,7 @@ export default {
 		 * Enables the setting of a relative position within the month in the yearly recurrence-editor
 		 */
 		enableBySetPositionYearly() {
-			this.$store.dispatch('enableYearlyRecurrenceBySetPosition', {
+			this.calendarObjectInstanceStore.enableYearlyRecurrenceBySetPosition({
 				calendarObjectInstance: this.calendarObjectInstance,
 				recurrenceRule: this.recurrenceRule,
 			})
@@ -382,8 +382,7 @@ export default {
 		 * Disables the setting of a relative position within the month in the yearly recurrence-editor
 		 */
 		disableBySetPositionYearly() {
-			this.$store.dispatch('disableYearlyRecurrenceBySetPosition', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.disableYearlyRecurrenceBySetPosition({
 				recurrenceRule: this.recurrenceRule,
 			})
 			this.modified()
@@ -392,8 +391,7 @@ export default {
 		 * Sets the recurrence-set to infinite recurrences
 		 */
 		setInfinite() {
-			this.$store.dispatch('setRecurrenceToInfinite', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.changeRecurrenceToInfinite({
 				recurrenceRule: this.recurrenceRule,
 			})
 			this.modified()
@@ -402,7 +400,7 @@ export default {
 		 *
 		 */
 		changeToUntil() {
-			this.$store.dispatch('enableRecurrenceLimitByUntil', {
+			this.calendarObjectInstanceStore.enableRecurrenceLimitByUntil({
 				calendarObjectInstance: this.calendarObjectInstance,
 				recurrenceRule: this.recurrenceRule,
 			})
@@ -416,7 +414,7 @@ export default {
 		 * @param {Date} until Date to set as new end of recurrence-set
 		 */
 		setUntil(until) {
-			this.calendarObjectInstance.changeRecurrenceUntil({
+			this.calendarObjectInstanceStore.changeRecurrenceUntil({
 				recurrenceRule: this.recurrenceRule,
 				until,
 			})
@@ -426,8 +424,7 @@ export default {
 		 *
 		 */
 		changeToCount() {
-			this.$store.dispatch('enableRecurrenceLimitByCount', {
-				calendarObjectInstance: this.calendarObjectInstance,
+			this.calendarObjectInstanceStore.enableRecurrenceLimitByCount({
 				recurrenceRule: this.recurrenceRule,
 			})
 			this.modified()
@@ -438,7 +435,7 @@ export default {
 		 * @param {number} count New number of recurrences to set
 		 */
 		setCount(count) {
-			this.calendarObjectInstance.changeRecurrenceCount({
+			this.calendarObjectInstanceStore.changeRecurrenceCount({
 				recurrenceRule: this.recurrenceRule,
 				count,
 			})

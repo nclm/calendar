@@ -494,7 +494,7 @@ export default {
 			}
 
 			this.isLoading = true
-			await this.$store.dispatch('saveCalendarObjectInstance', {
+			await this.calendarObjectInstanceStore.saveCalendarObjectInstance({
 				thisAndAllFuture,
 				calendarId: this.calendarId,
 			})
@@ -518,7 +518,7 @@ export default {
 		 * @return {Promise<void>}
 		 */
 		async duplicateEvent() {
-			await this.$store.dispatch('duplicateCalendarObjectInstance')
+			await this.calendarObjectInstanceStore.duplicateCalendarObjectInstance()
 		},
 
 		/**
@@ -537,7 +537,7 @@ export default {
 			}
 
 			this.isLoading = true
-			await this.$store.dispatch('deleteCalendarObjectInstance', { thisAndAllFuture })
+			await this.calendarObjectInstanceStore.deleteCalendarObjectInstance({ thisAndAllFuture })
 			this.isLoading = false
 		},
 		/**
@@ -570,7 +570,7 @@ export default {
 		 * @param {string} description New description
 		 */
 		updateDescription(description) {
-			this.$store.commit('changeDescription', {
+			this.calendarObjectInstanceStore.changeDescription({
 				calendarObjectInstance: this.calendarObjectInstance,
 				description,
 			})
@@ -581,7 +581,7 @@ export default {
 		 * @param {string} location New location
 		 */
 		updateLocation(location) {
-			this.$store.commit('changeLocation', {
+			this.calendarObjectInstanceStore.changeLocation({
 				calendarObjectInstance: this.calendarObjectInstance,
 				location,
 			})
@@ -592,7 +592,7 @@ export default {
 		 * @param {Date} startDate New start date
 		 */
 		updateStartDate(startDate) {
-			this.$store.dispatch('changeStartDate', {
+			this.calendarObjectInstanceStore.changeStartDate({
 				calendarObjectInstance: this.calendarObjectInstance,
 				startDate,
 			})
@@ -607,7 +607,7 @@ export default {
 				return
 			}
 
-			this.$store.dispatch('changeStartTimezone', {
+			this.calendarObjectInstanceStore.changeStartTimezone({
 				calendarObjectInstance: this.calendarObjectInstance,
 				startTimezone,
 			})
@@ -618,7 +618,7 @@ export default {
 		 * @param {Date} endDate New end date
 		 */
 		updateEndDate(endDate) {
-			this.$store.commit('changeEndDate', {
+			this.calendarObjectInstanceStore.changeEndDate({
 				calendarObjectInstance: this.calendarObjectInstance,
 				endDate,
 			})
@@ -633,7 +633,7 @@ export default {
 				return
 			}
 
-			this.$store.dispatch('changeEndTimezone', {
+			this.calendarObjectInstanceStore.changeEndTimezone({
 				calendarObjectInstance: this.calendarObjectInstance,
 				endTimezone,
 			})
@@ -642,7 +642,7 @@ export default {
 		 * Toggles the event between all-day and timed
 		 */
 		toggleAllDay() {
-			this.$store.dispatch('toggleAllDay', {
+			this.calendarObjectInstanceStore.toggleAllDay({
 				calendarObjectInstance: this.calendarObjectInstance,
 			})
 		},
@@ -697,7 +697,7 @@ export default {
 
 				try {
 					await vm.loadingCalendars()
-					await vm.$store.dispatch('getCalendarObjectInstanceForNewEvent', { isAllDay, start, end, timezoneId })
+					await this.calendarObjectInstanceStore.getCalendarObjectInstanceForNewEvent({ isAllDay, start, end, timezoneId })
 					vm.calendarId = vm.calendarObject.calendarId
 				} catch (error) {
 					console.debug(error)
@@ -736,7 +736,7 @@ export default {
 
 				try {
 					await vm.loadingCalendars()
-					await vm.$store.dispatch('getCalendarObjectInstanceByObjectIdAndRecurrenceId', { objectId, recurrenceId })
+					await this.calendarObjectInstanceStore.getCalendarObjectInstanceByObjectIdAndRecurrenceId({ objectId, recurrenceId })
 					vm.calendarId = vm.calendarObject.calendarId
 					vm.isEditingMasterItem = vm.eventComponent.isMasterItem()
 					vm.isRecurrenceException = vm.eventComponent.isRecurrenceException()
@@ -777,7 +777,7 @@ export default {
 			const timezoneId = this.$store.getters.getResolvedTimezone
 
 			await this.loadingCalendars()
-			await this.$store.dispatch('updateCalendarObjectInstanceForNewEvent', { isAllDay, start, end, timezoneId })
+			await this.calendarObjectInstanceStore.updateCalendarObjectInstanceForNewEvent({ isAllDay, start, end, timezoneId })
 			next()
 		} else {
 			// If both the objectId and recurrenceId remained the same
@@ -815,7 +815,7 @@ export default {
 
 			try {
 				await this.loadingCalendars()
-				await this.$store.dispatch('getCalendarObjectInstanceByObjectIdAndRecurrenceId', { objectId, recurrenceId })
+				await this.calendarObjectInstanceStore.getCalendarObjectInstanceByObjectIdAndRecurrenceId({ objectId, recurrenceId })
 				this.calendarId = this.calendarObject.calendarId
 				this.isEditingMasterItem = this.eventComponent.isMasterItem()
 				this.isRecurrenceException = this.eventComponent.isRecurrenceException()

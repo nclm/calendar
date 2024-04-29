@@ -329,7 +329,7 @@ import getTimezoneManager from '../services/timezoneDataProviderService.js'
 
 import usePrincipalsStore from '../store/principals.js'
 import { mapStores } from 'pinia'
-import { getClosestCSS3ColorNameForHex, getHexForColorName } from '../utils/color'
+import { getClosestCSS3ColorNameForHex, getHexForColorName } from '../utils/color.js'
 
 export default {
 	name: 'EditSidebar',

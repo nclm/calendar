@@ -87,6 +87,7 @@ import {
 } from '@nextcloud/dialogs'
 import { organizerDisplayName, removeMailtoPrefix } from '../../../utils/attendee.js'
 import usePrincipalsStore from '../../../store/principals.js'
+import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -121,7 +122,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useCalendarObjectInstanceStore),
 		...mapState({
 			talkEnabled: state => state.settings.talkEnabled,
 		}),
@@ -277,19 +278,19 @@ export default {
 
 				// Store in LOCATION property if it's missing/empty. Append to description otherwise.
 				if ((this.calendarObjectInstance.location ?? '').trim() === '') {
-					this.$store.commit('changeLocation', {
+					this.calendarObjectInstanceStore.changeLocation({
 						calendarObjectInstance: this.calendarObjectInstance,
 						location: url,
 					})
 					showSuccess(this.$t('calendar', 'Successfully appended link to talk room to location.'))
 				} else {
 					if (!this.calendarObjectInstance.description) {
-						this.$store.commit('changeDescription', {
+						this.calendarObjectInstanceStore.changeDescription({
 							calendarObjectInstance: this.calendarObjectInstance,
 							description: url,
 						})
 					} else {
-						this.$store.commit('changeDescription', {
+						this.calendarObjectInstanceStore.changeDescription({
 							calendarObjectInstance: this.calendarObjectInstance,
 							description: this.calendarObjectInstance.description + NEW_LINE + NEW_LINE + url + NEW_LINE,
 						})

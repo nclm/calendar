@@ -65,6 +65,7 @@ import ResourceListItem from './ResourceListItem.vue'
 import OrganizerNoEmailError from '../OrganizerNoEmailError.vue'
 import { organizerDisplayName, removeMailtoPrefix } from '../../../utils/attendee.js'
 import usePrincipalsStore from '../../../store/principals.js'
+import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
 import { mapStores } from 'pinia'
 
 import MapMarker from 'vue-material-design-icons/MapMarker.vue'
@@ -94,7 +95,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore, useCalendarObjectInstanceStore),
 		resources() {
 			return this.calendarObjectInstance.attendees.filter(attendee => {
 				return ['ROOM', 'RESOURCE'].includes(attendee.attendeeProperty.userType)
@@ -206,7 +207,7 @@ export default {
 				return
 			}
 
-			this.$store.commit('changeLocation', {
+			this.calendarObjectInstanceStore.changeLocation({
 				calendarObjectInstance: this.calendarObjectInstance,
 				location,
 			})

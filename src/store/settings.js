@@ -4,6 +4,7 @@
  *
  * @author Georg Ehrke <oc.list@georgehrke.com>
  * @author Richard Steinmetz <richard@steinmetz.cloud>
+ * @author Grigory Vodyanov <scratchx@gmx.com>
  *
  * @license AGPL-3.0-or-later
  *

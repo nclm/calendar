@@ -210,7 +210,7 @@ export default {
 		}, 1000 * 60)
 	},
 	async beforeMount() {
-		this.$store.commit('loadSettingsFromServer', {
+		this.settingsStore.loadSettingsFromServer({
 			appVersion: loadState('calendar', 'app_version'),
 			eventLimit: loadState('calendar', 'event_limit'),
 			firstRun: loadState('calendar', 'first_run'),
@@ -231,7 +231,7 @@ export default {
 			showResources: loadState('calendar', 'show_resources', true),
 			publicCalendars: loadState('calendar', 'publicCalendars'),
 		})
-		this.$store.dispatch('initializeCalendarJsConfig')
+		this.settingsStore.initializeCalendarJsConfig()
 
 		if (this.$route.name.startsWith('Public') || this.$route.name.startsWith('Embed')) {
 			await initializeClientForPublicView()

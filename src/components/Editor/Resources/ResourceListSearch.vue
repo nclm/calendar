@@ -130,7 +130,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore()),
+		...mapStores(usePrincipalsStore),
 		placeholder() {
 			return this.$t('calendar', 'Search for resources or rooms')
 		},

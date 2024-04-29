@@ -66,6 +66,7 @@ import { mapGetters, mapState } from 'vuex'
 import debounce from 'debounce'
 import { getYYYYMMDDFromFirstdayParam } from '../utils/date.js'
 import useCalendarsStore from '../store/calendars.js'
+import useSettingsStore from '../store/settings.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -92,9 +93,7 @@ export default {
 		...mapGetters({
 			timezoneId: 'getResolvedTimezone',
 		}),
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore, useSettingsStore),
 		...mapState({
 			locale: (state) => state.settings.momentLocale,
 			eventLimit: state => state.settings.eventLimit,
@@ -276,7 +275,7 @@ export default {
 		 */
 		saveNewView: debounce(function(initialView) {
 			if (this.isAuthenticatedUser) {
-				this.$store.dispatch('setInitialView', { initialView })
+				this.settingsStore.setInitialView({ initialView })
 			}
 		}, 5000),
 	},

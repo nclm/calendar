@@ -81,6 +81,7 @@ import {
 import { parseXML } from 'webdav'
 import usePrincipalsStore from '../../../store/principals.js'
 import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
+import useSettingsStore from '../../../store/settings.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -96,7 +97,7 @@ export default {
 		Plus,
 	},
 	props: {
-		...mapStores(usePrincipalsStore, useCalendarObjectInstanceStore),
+		...mapStores(usePrincipalsStore, useSettingsStore, useCalendarObjectInstanceStore),
 		calendarObjectInstance: {
 			type: Object,
 			required: true,
@@ -165,7 +166,7 @@ export default {
 		},
 		async onLocalAttachmentSelected(e) {
 			try {
-				const attachmentsFolder = await this.$store.dispatch('createAttachmentsFolder')
+				const attachmentsFolder = await this.settingsStore.createAttachmentsFolder()
 				const attachments = await uploadLocalAttachment(attachmentsFolder, Array.from(e.target.files), this.currentUser.dav, this.attachments)
 				// TODO do not share file, move to PHP
 				attachments.map(async attachment => {

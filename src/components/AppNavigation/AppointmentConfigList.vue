@@ -90,10 +90,9 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(usePrincipalsStore, useCalendarsStore),
+		...mapStores(useAppointmentConfigsStore, usePrincipalsStore, useCalendarsStore),
 		configs() {
-			const store = useAppointmentConfigsStore()
-			return store.allConfigs
+			return this.appointmentConfigsStore.allConfigs
 		},
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
@@ -131,7 +130,7 @@ export default {
 			logger.info('Deleting config', { config })
 
 			try {
-				await this.$store.dispatch('deleteConfig', config)
+				await this.appointmentConfigsStore.deleteConfig({ config })
 
 				logger.info('Config deleted', { config })
 			} catch (error) {

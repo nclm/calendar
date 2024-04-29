@@ -174,11 +174,11 @@ export default {
 			} = loadState('calendar', 'dashboard_data')
 			const locale = await loadMomentLocalization()
 
-			this.$store.commit('loadSettingsFromServer', {
+			this.settingsStore.loadSettingsFromServer({
 				timezone,
 				showTasks,
 			})
-			this.$store.commit('setMomentLocale', {
+			this.settingsStore.setMomentLocale({
 				locale,
 			})
 		},

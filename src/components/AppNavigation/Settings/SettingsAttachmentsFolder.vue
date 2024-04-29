@@ -41,12 +41,16 @@ import { mapState } from 'vuex'
 import { getFilePickerBuilder, showError, showSuccess } from '@nextcloud/dialogs'
 import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
 
+import useSettingsStore from '../../../store/settings.js'
+import { mapStores } from 'pinia'
+
 export default {
 	name: 'SettingsAttachmentsFolder',
 	components: {
 		NcInputField,
 	},
 	computed: {
+		...mapStores(useSettingsStore),
 		...mapState({
 			attachmentsFolder: state => (state.settings.attachmentsFolder || '/'),
 		}),
@@ -76,7 +80,7 @@ export default {
 				path = path.replace(/\/\//gi, '/')
 			}
 
-			this.$store.dispatch('setAttachmentsFolder', { attachmentsFolder: path })
+			this.settingsStore.setAttachmentsFolder({ attachmentsFolder: path })
 				.then(() => {
 					showSuccess(this.$t('calendar', 'Attachments folder successfully saved.'))
 				})

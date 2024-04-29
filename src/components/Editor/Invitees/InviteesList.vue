@@ -228,7 +228,7 @@ export default {
 	},
 	methods: {
 		addAttendee({ commonName, email, calendarUserType, language, timezoneId, member }) {
-			this.$store.commit('addAttendee', {
+			this.calendarObjectInstanceStore.addAttendee({
 				calendarObjectInstance: this.calendarObjectInstance,
 				commonName,
 				uri: email,
@@ -256,7 +256,7 @@ export default {
 					}
 				})
 			}
-			this.$store.commit('removeAttendee', {
+			this.calendarObjectInstanceStore.removeAttendee({
 				calendarObjectInstance: this.calendarObjectInstance,
 				attendee,
 			})

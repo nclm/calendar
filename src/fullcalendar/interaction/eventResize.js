@@ -27,10 +27,9 @@ import useCalendarObjectsStore from '../../store/calendarObjects.js'
 /**
  * Returns a function to resize an event
  *
- * @param {object} store The Vuex Store
  * @return {Function}
  */
-export default function(store) {
+export default function() {
 	return async function({ event, startDelta, endDelta, revert }) {
 		const startDeltaDuration = getDurationValueFromFullCalendarDuration(startDelta)
 		const endDeltaDuration = getDurationValueFromFullCalendarDuration(endDelta)

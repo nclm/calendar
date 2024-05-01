@@ -27,26 +27,26 @@ import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import { showInfo } from '@nextcloud/dialogs'
 import { emit } from '@nextcloud/event-bus'
+import useSettingsStore from '../../store/settings.js'
 
 /**
  * Returns a function for click action on event. This will open the editor.
  * Either the popover or the sidebar, based on the user's preference.
  *
- * @param {object} store The Vuex store
  * @param {object} router The Vue router
  * @param {object} route The current Vue route
  * @param {Window} window The window object
  * @return {Function}
  */
-export default function(store, router, route, window) {
+export default function(router, route, window) {
 	return function({ event }) {
 		switch (event.extendedProps.objectType) {
 		case 'VEVENT':
-			handleEventClick(event, store, router, route, window)
+			handleEventClick(event, router, route, window)
 			break
 
 		case 'VTODO':
-			handleToDoClick(event, store, route, window)
+			handleToDoClick(event, route, window)
 			break
 		}
 	}
@@ -56,13 +56,13 @@ export default function(store, router, route, window) {
  * Handle eventClick for VEVENT
  *
  * @param {EventDef} event FullCalendar event
- * @param {object} store The Vuex store
  * @param {object} router The Vue router
  * @param {object} route The current Vue route
  * @param {Window} window The window object
  */
-function handleEventClick(event, store, router, route, window) {
-	let desiredRoute = store.state.settings.skipPopover
+function handleEventClick(event, router, route, window) {
+	const settingsStore = useSettingsStore()
+	let desiredRoute = settingsStore.skipPopover
 		? 'EditSidebarView'
 		: 'EditPopoverView'
 
@@ -92,11 +92,11 @@ function handleEventClick(event, store, router, route, window) {
  * Handle eventClick for VTODO
  *
  * @param {EventDef} event FullCalendar event
- * @param {object} store The Vuex store
  * @param {object} route The current Vue route
  * @param {Window} window The window object
  */
-function handleToDoClick(event, store, route, window) {
+function handleToDoClick(event, route, window) {
+	const settingsStore = useSettingsStore()
 
 	if (isPublicOrEmbeddedRoute(route.name)) {
 		return
@@ -108,7 +108,7 @@ function handleToDoClick(event, store, route, window) {
 
 	emit('calendar:handle-todo-click', { calendarId, taskId })
 
-	if (!store.state.settings.tasksEnabled) {
+	if (!settingsStore.tasksEnabled) {
 		showInfo(t('calendar', 'Please ask your administrator to enable the Tasks App.'))
 		return
 	}

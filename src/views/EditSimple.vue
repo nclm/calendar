@@ -191,7 +191,8 @@ import Close from 'vue-material-design-icons/Close.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Download from 'vue-material-design-icons/Download.vue'
 import ContentDuplicate from 'vue-material-design-icons/ContentDuplicate.vue'
-import { mapState } from 'vuex'
+import { mapState } from 'pinia'
+import useSettingsStore from '../store/settings.js'
 
 export default {
 	name: 'EditSimple',
@@ -219,11 +220,6 @@ export default {
 	mixins: [
 		EditorMixin,
 	],
-	computed: {
-	  ...mapState({
-		  hideEventExport: (state) => state.settings.hideEventExport,
-	  }),
-	},
 	data() {
 		return {
 			placement: 'auto',
@@ -232,6 +228,9 @@ export default {
 			boundaryElement: document.querySelector('#app-content-vue > .fc'),
 			isVisible: true,
 		}
+	},
+	computed: {
+	  ...mapState(useSettingsStore, ['hideEventExport']),
 	},
 	watch: {
 		$route(to, from) {

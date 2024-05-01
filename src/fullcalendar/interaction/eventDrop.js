@@ -29,11 +29,10 @@ import useCalendarObjectsStore from '../../store/calendarObjects.js'
 /**
  * Returns a function to drop an event at a different position
  *
- * @param {object} store The Vuex store
  * @param {object} fcAPI The fullcalendar api
  * @return {Function}
  */
-export default function(store, fcAPI) {
+export default function(fcAPI) {
 	return async function({ event, delta, revert }) {
 		const deltaDuration = getDurationValueFromFullCalendarDuration(delta)
 		const defaultAllDayDuration = getDurationValueFromFullCalendarDuration(fcAPI.getOption('defaultAllDayEventDuration'))

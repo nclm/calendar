@@ -66,8 +66,6 @@ export default defineStore('settings', {
 		}
 	},
 	getters: {
-		isTalkEnabled: (state) => state.talkEnabled,
-
 		/**
 		 * Gets the resolved timezone.
 		 * If the timezone is set to automatic, it returns the user's current timezone

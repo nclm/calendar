@@ -93,10 +93,6 @@ import {
 } from '../utils/date.js'
 import getTimezoneManager from '../services/timezoneDataProviderService.js'
 import logger from '../utils/logger.js'
-import {
-	mapGetters,
-	mapState,
-} from 'vuex'
 import loadMomentLocalization from '../utils/moment.js'
 import { loadState } from '@nextcloud/initial-state'
 import {
@@ -109,7 +105,7 @@ import useFetchedTimeRangesStore from '../store/fetchedTimeRanges.js'
 import useCalendarsStore from '../store/calendars.js'
 import usePrincipalsStore from '../store/principals.js'
 import useSettingsStore from '../store/settings.js'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'Calendar',
@@ -138,23 +134,22 @@ export default {
 	},
 	computed: {
 		...mapStores(useFetchedTimeRangesStore, useCalendarsStore, usePrincipalsStore, useSettingsStore),
-		...mapGetters({
+		...mapState(useSettingsStore, {
 			timezoneId: 'getResolvedTimezone',
-		},
-		),
-		...mapState({
-			eventLimit: state => state.settings.eventLimit,
-			skipPopover: state => state.settings.skipPopover,
-			showWeekends: state => state.settings.showWeekends,
-			showWeekNumbers: state => state.settings.showWeekNumbers,
-			slotDuration: state => state.settings.slotDuration,
-			defaultReminder: state => state.settings.defaultReminder,
-			showTasks: state => state.settings.showTasks,
-			timezone: state => state.settings.timezone,
-			modificationCount: state => state.calendarObjects.modificationCount,
-			disableAppointments: state => state.settings.disableAppointments,
-			attachmentsFolder: state => state.settings.attachmentsFolder,
 		}),
+		...mapState(useSettingsStore, [
+			'eventLimit',
+			'skipPopover',
+			'showWeekends',
+			'showWeekNumbers',
+			'slotDuration',
+			'defaultReminder',
+			'showTasks',
+			'timezone',
+			'modificationCount',
+			'disableAppointments',
+			'attachmentsFolder',
+		]),
 		defaultDate() {
 			return getYYYYMMDDFromFirstdayParam(this.$route.params?.firstDay ?? 'now')
 		},

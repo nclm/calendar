@@ -73,7 +73,6 @@
 
 <script>
 import { NcButton } from '@nextcloud/vue'
-import { mapState } from 'vuex'
 import InviteesListSearch from './InviteesListSearch.vue'
 import InviteesListItem from './InviteesListItem.vue'
 import OrganizerListItem from './OrganizerListItem.vue'
@@ -88,7 +87,8 @@ import {
 import { organizerDisplayName, removeMailtoPrefix } from '../../../utils/attendee.js'
 import usePrincipalsStore from '../../../store/principals.js'
 import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
-import { mapStores } from 'pinia'
+import useSettingsStore from '../../../store/settings.js'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'InviteesList',
@@ -123,9 +123,7 @@ export default {
 	},
 	computed: {
 		...mapStores(usePrincipalsStore, useCalendarObjectInstanceStore),
-		...mapState({
-			talkEnabled: state => state.settings.talkEnabled,
-		}),
+		...mapState(useSettingsStore, ['talkEnabled']),
 		noInviteesMessage() {
 			return this.$t('calendar', 'No attendees yet')
 		},

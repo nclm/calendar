@@ -20,20 +20,22 @@
  *
  */
 
+import useSettingsStore from '../../store/settings.js'
+
 /**
  * Provides a function to select a time-range in the calendar-grid.
  * This will open the new event editor. Based on the user's preference,
  * either the popover or the sidebar.
  *
- * @param {object} store The Vuex store
  * @param {object} router The Vue router
  * @param {object} route The Vue route
  * @param {Window} window The window object
  * @return {Function}
  */
-export default function(store, router, route, window) {
+export default function(router, route, window) {
 	return function({ start, end, allDay }) {
-		let name = store.state.settings.skipPopover
+		const settingsStore = useSettingsStore()
+		let name = settingsStore.skipPopover
 			? 'NewSidebarView'
 			: 'NewPopoverView'
 

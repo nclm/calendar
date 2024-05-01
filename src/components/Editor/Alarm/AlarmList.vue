@@ -41,10 +41,10 @@
 <script>
 import AlarmListNew from './AlarmListNew.vue'
 import AlarmListItem from './AlarmListItem.vue'
-import { mapState } from 'vuex'
 
 import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
-import { mapStores } from 'pinia'
+import useSettingsStore from '../../../store/settings.js'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'AlarmList',
@@ -64,9 +64,7 @@ export default {
 	},
 	computed: {
 		...mapStores(useCalendarObjectInstanceStore),
-		...mapState({
-		  forceEventAlarmType: (state) => state.settings.forceEventAlarmType,
-	  }),
+		...mapState(useSettingsStore, ['forceEventAlarmType']),
 		alarms() {
 			return this.calendarObjectInstance.alarms
 		},

@@ -78,8 +78,7 @@ import pLimit from 'p-limit'
 import { eventSourceFunction } from '../fullcalendar/eventSources/eventSourceFunction.js'
 import loadMomentLocalization from '../utils/moment.js'
 import { DateTimeValue } from '@nextcloud/calendar-js'
-import { mapGetters } from 'vuex'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 import useSettingsStore from '../store/settings.js'
 import useCalendarsStore from '../store/calendars.js'
 import usePrincipalsStore from '../store/principals.js'
@@ -105,7 +104,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters({
+		...mapState(useSettingsStore, {
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
 		...mapStores(useSettingsStore, useCalendarsStore, usePrincipalsStore),

@@ -134,9 +134,9 @@ import CalendarCheck from 'vue-material-design-icons/CalendarCheck.vue'
 import LinkVariant from 'vue-material-design-icons/LinkVariant.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import Web from 'vue-material-design-icons/Web.vue'
-import { mapState } from 'vuex'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 import useCalendarsStore from '../../../store/calendars.js'
+import useSettingsStore from '../../../store/settings.js'
 
 export default {
 	name: 'CalendarListNew',
@@ -174,9 +174,9 @@ export default {
 		}
 	},
 	computed: {
-		...mapState({
-			canSubscribeLink: state => state.settings.canSubscribeLink,
-			hasPublicCalendars: state => Boolean(state.settings.publicCalendars),
+		...mapState(useSettingsStore, {
+			canSubscribeLink: 'canSubscribeLink',
+			hasPublicCalendars: store => Boolean(store.publicCalendars),
 		}),
 		...mapStores({
 			useCalendarsStore,

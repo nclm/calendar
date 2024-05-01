@@ -37,12 +37,11 @@
 
 <script>
 import debounce from 'debounce'
-import { mapState } from 'vuex'
 import { getFilePickerBuilder, showError, showSuccess } from '@nextcloud/dialogs'
 import NcInputField from '@nextcloud/vue/dist/Components/NcInputField.js'
 
 import useSettingsStore from '../../../store/settings.js'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'SettingsAttachmentsFolder',
@@ -51,8 +50,8 @@ export default {
 	},
 	computed: {
 		...mapStores(useSettingsStore),
-		...mapState({
-			attachmentsFolder: state => (state.settings.attachmentsFolder || '/'),
+		...mapState(useSettingsStore, {
+			attachmentsFolder: store => store.attachmentsFolder || '/',
 		}),
 	},
 	methods: {

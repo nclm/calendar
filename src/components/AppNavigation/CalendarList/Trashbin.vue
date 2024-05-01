@@ -121,11 +121,11 @@ import {
 import moment from '@nextcloud/moment'
 import logger from '../../../utils/logger.js'
 import { showError } from '@nextcloud/dialogs'
-import { mapGetters } from 'vuex'
 import Moment from './Moment.vue'
 import { uidToHexColor } from '../../../utils/color.js'
 import useCalendarsStore from '../../../store/calendars.js'
-import { mapStores } from 'pinia'
+import useSettingsStore from '../../../store/settings.js'
+import { mapStores, mapState } from 'pinia'
 
 import Delete from 'vue-material-design-icons/Delete.vue'
 
@@ -151,7 +151,7 @@ export default {
 		...mapStores({
 			useCalendarsStore,
 		}),
-		...mapGetters({
+		...mapState(useSettingsStore, {
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
 		calendars() {

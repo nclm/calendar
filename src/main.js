@@ -72,7 +72,7 @@ Vue.prototype.$n = translatePlural
 Vue.prototype.t = translate
 Vue.prototype.n = translatePlural
 
-windowTitleService(router, store)
+windowTitleService(router)
 
 export default new Vue({
 	el: '#content',

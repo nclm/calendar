@@ -159,7 +159,6 @@ import {
 	NcActionRadio as ActionRadio,
 	NcActionSeparator as ActionSeparator,
 } from '@nextcloud/vue'
-import { mapState } from 'vuex'
 import ClickOutside from 'vue-click-outside'
 import formatAlarm from '../../../filters/alarmFormat.js'
 import AlarmTimeUnitSelect from './AlarmTimeUnitSelect.vue'
@@ -172,7 +171,8 @@ import Delete from 'vue-material-design-icons/Delete.vue'
 import Pencil from 'vue-material-design-icons/Pencil.vue'
 
 import useCalendarObjectInstanceStore from '../../../store/calendarObjectInstance.js'
-import { mapStores } from 'pinia'
+import useSettingsStore from '../../../store/settings.js'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'AlarmListItem',
@@ -221,9 +221,9 @@ export default {
 	},
 	computed: {
 		...mapStores(useCalendarObjectInstanceStore),
-		...mapState({
-			locale: (state) => state.settings.momentLocale,
-			forceEventAlarmType: (state) => state.settings.forceEventAlarmType,
+		...mapState(useSettingsStore, {
+			locale: 'momentLocale',
+			forceEventAlarmType: 'forceEventAlarmType',
 		}),
 		canEdit() {
 			// You can always edit an alarm if it's absolute

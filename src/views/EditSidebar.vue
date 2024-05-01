@@ -293,7 +293,6 @@ import {
 
 } from '@nextcloud/vue'
 
-import { mapState } from 'vuex'
 import { generateUrl } from '@nextcloud/router'
 
 import AlarmList from '../components/Editor/Alarm/AlarmList.vue'
@@ -328,7 +327,8 @@ import { DateTimeValue, Parameter } from '@nextcloud/calendar-js'
 import getTimezoneManager from '../services/timezoneDataProviderService.js'
 
 import usePrincipalsStore from '../store/principals.js'
-import { mapStores } from 'pinia'
+import useSettingsStore from '../store/settings.js'
+import { mapStores, mapState } from 'pinia'
 import { getClosestCSS3ColorNameForHex, getHexForColorName } from '../utils/color.js'
 
 export default {
@@ -381,11 +381,11 @@ export default {
 	},
 	computed: {
 		...mapStores(usePrincipalsStore),
-		...mapState({
-			locale: (state) => state.settings.momentLocale,
-			hideEventExport: (state) => state.settings.hideEventExport,
-			attachmentsFolder: state => state.settings.attachmentsFolder,
-			showResources: state => state.settings.showResources,
+		...mapState(useSettingsStore, {
+			locale: 'momentLocale',
+			hideEventExport: 'hideEventExport',
+			attachmentsFolder: 'attachmentsFolder',
+			showResources: 'showResources',
 		}),
 		accessClass() {
 			return this.calendarObjectInstance?.accessClass || null

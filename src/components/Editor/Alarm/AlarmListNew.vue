@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState } from 'pinia'
 import { getDefaultAlarms } from '../../../defaults/defaultAlarmProvider.js'
 import {
 	getAmountAndUnitForTimedEvents,
@@ -39,6 +39,7 @@ import {
 } from '../../../utils/alarms.js'
 import alarmFormat from '../../../filters/alarmFormat.js'
 import PropertySelect from '../Properties/PropertySelect.vue'
+import useSettingsStore from '../../../store/settings.js'
 
 export default {
 	name: 'AlarmListNew',
@@ -56,8 +57,8 @@ export default {
 		},
 	},
 	computed: {
-		...mapState({
-			locale: (state) => state.settings.momentLocale,
+		...mapState(useSettingsStore, {
+			locale: 'momentLocale',
 		}),
 		currentUserTimezone() {
 			return this.$store.getters.getResolvedTimezone

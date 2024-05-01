@@ -94,12 +94,13 @@ import {
 	getFirstDay,
 } from '@nextcloud/l10n'
 import moment from '@nextcloud/moment'
-import { mapState } from 'vuex'
+import { mapState } from 'pinia'
 import {
 	showError,
 } from '@nextcloud/dialogs'
 
 import { getLangConfigForVue2DatePicker } from '../../utils/localization.js'
+import useSettingsStore from '../../store/settings.js'
 
 export default {
 	name: 'DatePicker',
@@ -161,9 +162,9 @@ export default {
 		}
 	},
 	computed: {
-		...mapState({
-			locale: (state) => state.settings.momentLocale,
-			showWeekNumbers: (state) => state.settings.showWeekNumbers,
+		...mapState(useSettingsStore, {
+			locale: 'momentLocale',
+			showWeekNumbers: 'showWeekNumbers',
 		}),
 		/**
 		 * Returns the lang config for vue2-datepicker

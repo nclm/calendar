@@ -155,8 +155,7 @@ import { NcModal as Modal, NcButton, NcCheckboxRadioSwitch, NcNoteCard } from '@
 import TextInput from './AppointmentConfigModal/TextInput.vue'
 import TextArea from './AppointmentConfigModal/TextArea.vue'
 import AppointmentConfig from '../models/appointmentConfig.js'
-import { mapGetters } from 'vuex'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 import CalendarPicker from './Shared/CalendarPicker.vue'
 import DurationInput from './AppointmentConfigModal/DurationInput.vue'
 import NumberInput from './AppointmentConfigModal/NumberInput.vue'
@@ -167,6 +166,7 @@ import logger from '../utils/logger.js'
 import Confirmation from './AppointmentConfigModal/Confirmation.vue'
 import useAppointmentConfigsStore from '../store/appointmentConfigs.js'
 import useCalendarsStore from '../store/calendars.js'
+import useSettingsStore from '../store/settings.js'
 
 export default {
 	name: 'AppointmentConfigModal',
@@ -207,9 +207,9 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters([
-			'isTalkEnabled',
-		]),
+		...mapState(useSettingsStore, {
+			isTalkEnabled: 'talkEnabled',
+		}),
 		...mapStores(useAppointmentConfigsStore, useCalendarsStore),
 		formTitle() {
 			if (this.isNew) {

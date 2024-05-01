@@ -27,17 +27,14 @@ import { getIllustrationForTitle } from '../utils/illustration.js'
 import { getPrefixedRoute } from '../utils/router.js'
 import { dateFactory } from '../utils/date.js'
 import { uidToHexColor } from '../utils/color.js'
-import {
-	mapGetters,
-	mapState,
-} from 'vuex'
 import { translate as t } from '@nextcloud/l10n'
 import { removeMailtoPrefix } from '../utils/attendee.js'
 import usePrincipalsStore from '../store/principals.js'
+import useSettingsStore from '../store/settings.js'
 import useCalendarsStore from '../store/calendars.js'
 import useCalendarObjectsStore from '../store/calendarObjects.js'
 import useCalendarObjectInstanceStore from '../store/calendarObjectInstance.js'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 
 /**
  * This is a mixin for the editor. It contains common Vue stuff, that is
@@ -68,14 +65,11 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters({
-			currentUserTimezone: 'getResolvedTimezone',
+		...mapState(useSettingsStore, {
+			currentUserTimezone: 'getResolvedTimezone'
 		}),
-		...mapState({
-			initialCalendarsLoaded: (state) => state.calendars.initialCalendarsLoaded,
-			calendarObject: (state) => state.calendarObjectInstance.calendarObject,
-			calendarObjectInstance: (state) => state.calendarObjectInstance.calendarObjectInstance,
-		}),
+		...mapState(useCalendarsStore, ['initialCalendarsLoaded']),
+		...mapState(useCalendarObjectInstanceStore, ['calendarObject', 'calendarObjectInstance']),
 		...mapStores(useCalendarsStore, usePrincipalsStore, useCalendarObjectsStore, useCalendarObjectInstanceStore),
 		eventComponent() {
 			return this.calendarObjectInstance?.eventComponent

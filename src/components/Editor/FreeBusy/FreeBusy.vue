@@ -67,13 +67,11 @@ import momentPluginFactory from '../../../fullcalendar/localization/momentPlugin
 // Import timezone plugins
 import VTimezoneNamedTimezone from '../../../fullcalendar/timezones/vtimezoneNamedTimezoneImpl.js'
 
-import {
-	mapGetters,
-	mapState,
-} from 'vuex'
 import { NcModal as Modal } from '@nextcloud/vue'
 import DatePicker from '../../Shared/DatePicker.vue'
 import { getColorForFBType } from '../../../utils/freebusy.js'
+import { mapState } from 'pinia'
+import useSettingsStore from '../../../store/settings.js'
 
 export default {
 	name: 'FreeBusy',
@@ -121,14 +119,10 @@ export default {
 		}
 	},
 	computed: {
-		...mapGetters({
+		...mapState(useSettingsStore, {
 			timezoneId: 'getResolvedTimezone',
 		}),
-		...mapState({
-			showWeekends: state => state.settings.showWeekends,
-			showWeekNumbers: state => state.settings.showWeekNumbers,
-			timezone: state => state.settings.timezone,
-		}),
+		...mapState(useSettingsStore, ['showWeekends', 'showWeekNumbers', 'timezone']),
 		/**
 		 * FullCalendar Plugins
 		 *

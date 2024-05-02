@@ -154,6 +154,8 @@ import { getDefaultAlarms } from '../../defaults/defaultAlarmProvider.js'
 import ClipboardArrowLeftOutline from 'vue-material-design-icons/ClipboardArrowLeftOutline.vue'
 import InformationVariant from 'vue-material-design-icons/InformationVariant.vue'
 import OpenInNewIcon from 'vue-material-design-icons/OpenInNew.vue'
+import { NcMultiselect as Multiselect } from '@nextcloud/vue'
+
 
 export default {
 	name: 'Settings',
@@ -169,6 +171,7 @@ export default {
 		ClipboardArrowLeftOutline,
 		InformationVariant,
 		OpenInNewIcon,
+		Multiselect,
 	},
 	props: {
 		loadingCalendars: {
@@ -191,12 +194,28 @@ export default {
 	},
 	computed: {
 		...mapStores(useSettingsStore, useCalendarsStore, useImportFilesStore),
-		...mapState(useCalendarsStore, ['hasBirthdayCalendar']),
+		...mapState(useSettingsStore, [
+			'eventLimit',
+			'showTasks',
+			'showPopover',
+			'showWeekends',
+			'showWeekNumbers',
+			'slotDuration',
+			'defaultReminder',
+			'timezone',
+			'attachmentFolder',
+		]),
+		...mapState(useSettingsStore, {
+			locale: store => store.momentLocale,
+		}),
 		isBirthdayCalendarDisabled() {
 			return this.savingBirthdayCalendar || this.loadingCalendars
 		},
 		files() {
 			return this.importFilesStore.importFiles
+		},
+		hasBirthdayCalendar() {
+			return !!this.settingsStore.getBirthdayCalendar
 		},
 		showUploadButton() {
 			return this.importStateStore.importState.stage === IMPORT_STAGE_DEFAULT

@@ -101,8 +101,9 @@ export default defineStore('settings', {
 		 */
 		async toggleBirthdayCalendarEnabled() {
 			const calendarsStore = useCalendarsStore()
+			const hasBirthdayCalendar = !!calendarsStore.getBirthdayCalendar
 
-			if (calendarsStore.hasBirthdayCalendar) {
+			if (hasBirthdayCalendar) {
 				const calendar = calendarsStore.getBirthdayCalendar
 				await calendarsStore.deleteCalendar({ calendar })
 			} else {

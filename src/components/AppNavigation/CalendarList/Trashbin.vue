@@ -158,7 +158,7 @@ export default {
 			return this.calendarsStore.sortedDeletedCalendars
 		},
 		objects() {
-			return this.calendarsStore.deletedCalendarObjects
+			return this.calendarsStore.allDeletedCalendarObjects
 		},
 		items() {
 			const formattedCalendars = this.calendars.map(calendar => ({

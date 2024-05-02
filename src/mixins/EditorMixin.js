@@ -683,16 +683,18 @@ export default {
 	async beforeRouteEnter(to, from, next) {
 		if (to.name === 'NewSidebarView' || to.name === 'NewPopoverView') {
 			next(async vm => {
+				const settingsStore = useSettingsStore()
+				const calendarObjectInstanceStore = useCalendarObjectInstanceStore()
 				vm.resetState()
 
 				const isAllDay = (to.params.allDay === '1')
 				const start = parseInt(to.params.dtstart, 10)
 				const end = parseInt(to.params.dtend, 10)
-				const timezoneId = this.settingsStore.getResolvedTimezone
+				const timezoneId = settingsStore.getResolvedTimezone
 
 				try {
 					await vm.loadingCalendars()
-					await this.calendarObjectInstanceStore.getCalendarObjectInstanceForNewEvent({ isAllDay, start, end, timezoneId })
+					await calendarObjectInstanceStore.getCalendarObjectInstanceForNewEvent({ isAllDay, start, end, timezoneId })
 					vm.calendarId = vm.calendarObject.calendarId
 				} catch (error) {
 					console.debug(error)
@@ -704,6 +706,8 @@ export default {
 			})
 		} else {
 			next(async vm => {
+				const calendarObjectInstanceStore = useCalendarObjectInstanceStore()
+
 				vm.resetState()
 				const objectId = to.params.object
 				const recurrenceId = to.params.recurrenceId
@@ -714,7 +718,7 @@ export default {
 					// Probably not though, because it's async
 					try {
 						await vm.loadingCalendars()
-						const recurrenceId = await this.calendarObjectInstanceStore.resolveClosestRecurrenceIdForCalendarObject({
+						const recurrenceId = await calendarObjectInstanceStore.resolveClosestRecurrenceIdForCalendarObject({
 							objectId, closeToDate
 						})
 						const params = Object.assign({}, vm.$route.params, { recurrenceId })
@@ -731,7 +735,7 @@ export default {
 
 				try {
 					await vm.loadingCalendars()
-					await this.calendarObjectInstanceStore.getCalendarObjectInstanceByObjectIdAndRecurrenceId({ objectId, recurrenceId })
+					await calendarObjectInstanceStore.getCalendarObjectInstanceByObjectIdAndRecurrenceId({ objectId, recurrenceId })
 					vm.calendarId = vm.calendarObject.calendarId
 					vm.isEditingMasterItem = vm.eventComponent.isMasterItem()
 					vm.isRecurrenceException = vm.eventComponent.isRecurrenceException()

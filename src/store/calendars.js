@@ -136,7 +136,7 @@ export default defineStore('calendars', {
 		 * @param {object} state the store data
 		 * @return {Array}
 		 */
-		deletedCalendarObjects(state) {
+		allDeletedCalendarObjects(state) {
 			const calendarUriMap = {}
 			state.calendars.forEach(calendar => {
 				const withoutTrail = calendar.url.replace(/\/$/, '')
@@ -206,16 +206,6 @@ export default defineStore('calendars', {
 		},
 
 		/**
-		 * Whether or not a birthday calendar exists
-		 *
-		 * @param {object} state The store data
-		 * @return {boolean}
-		 */
-		hasBirthdayCalendar: (state) => {
-			return !!this.getBirthdayCalendar
-		},
-
-		/**
 		 *
 		 * @param {object} state the store data
 		 * @return {function({Boolean}, {Boolean}, {Boolean}): {Object}[]}
@@ -237,8 +227,6 @@ export default defineStore('calendars', {
 				return true
 			})
 		},
-
-		editCalendarModal: (state) => state.editCalendarModal,
 	},
 	actions: {
 		/**

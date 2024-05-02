@@ -47,9 +47,6 @@
 </template>
 
 <script>
-import {
-	mapState,
-} from 'vuex'
 import { getParserManager } from '@nextcloud/calendar-js'
 import ImportScreen from './ImportScreen.vue'
 import { readFileAsText } from '../../../services/readFileAsTextService.js'
@@ -70,7 +67,7 @@ import useImportStateStore from '../../../store/importState.js'
 import useImportFilesStore from '../../../store/importFiles.js'
 import useCalendarsStore from '../../../store/calendars.js'
 import useCalendarObjectsStore from '../../../store/calendarObjects.js'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'SettingsImportSection',
@@ -86,12 +83,14 @@ export default {
 	},
 	computed: {
 		...mapStores(useImportStateStore, useImportFilesStore, useCalendarsStore, useCalendarObjectsStore),
-		...mapState({
-			files: state => state.importFiles.importFiles,
-			stage: state => state.importState.stage,
-			total: state => state.importState.total,
-			accepted: state => state.importState.accepted,
-			denied: state => state.importState.denied,
+		...mapState(useImportFilesStore, {
+			files: 'importFiles',
+		}),
+		...mapState(useImportStateStore, {
+			stage: 'stage',
+			total: 'total',
+			accepted: 'accepted',
+			denied: 'denied',
 		}),
 		/**
 		 * Total amount of processed calendar-objects, either accepted or failed

@@ -93,7 +93,9 @@ export default {
 	computed: {
 		...mapStores(useAppointmentConfigsStore, usePrincipalsStore, useCalendarsStore, useSettingsStore),
 		configs() {
-			return this.appointmentConfigsStore.allConfigs
+			const appointmentConfigsStore = useAppointmentConfigsStore()
+
+			return appointmentConfigsStore.allConfigs
 		},
 		defaultConfig() {
 			return AppointmentConfig.createDefault(

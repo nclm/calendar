@@ -210,6 +210,7 @@ export default {
 		...mapState(useSettingsStore, {
 			isTalkEnabled: 'talkEnabled',
 		}),
+		...mapState(useCalendarsStore, ['ownSortedCalendars']),
 		...mapStores(useAppointmentConfigsStore, useCalendarsStore, useSettingsStore),
 		formTitle() {
 			if (this.isNew) {
@@ -246,7 +247,7 @@ export default {
 		},
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
-				this.calendarUrlToUri(this.calendarsStore.ownSortedCalendars[0].url),
+				this.calendarUrlToUri(this.ownSortedCalendars[0].url),
 				this.calendarsStore.scheduleInbox,
 				this.settingsStore.getResolvedTimezone,
 			)

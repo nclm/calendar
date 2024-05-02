@@ -162,7 +162,7 @@ export default {
 		 */
 		plugins() {
 			return [
-				momentPluginFactory(this.$store),
+				momentPluginFactory(),
 				VTimezoneNamedTimezone,
 				dayGridPlugin,
 				interactionPlugin,

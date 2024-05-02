@@ -72,6 +72,7 @@ import NoEmailAddressWarning from '../AppointmentConfigModal/NoEmailAddressWarni
 import useAppointmentConfigsStore from '../../store/appointmentConfigs.js'
 import usePrincipalsStore from '../../store/principals.js'
 import useCalendarsStore from '../../store/calendars.js'
+import useSettingsStore from '../../store/settings.js'
 import { mapStores } from 'pinia'
 
 export default {
@@ -90,7 +91,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(useAppointmentConfigsStore, usePrincipalsStore, useCalendarsStore),
+		...mapStores(useAppointmentConfigsStore, usePrincipalsStore, useCalendarsStore, useSettingsStore),
 		configs() {
 			return this.appointmentConfigsStore.allConfigs
 		},
@@ -98,7 +99,7 @@ export default {
 			return AppointmentConfig.createDefault(
 				this.calendarUrlToUri(this.calendarsStore.ownSortedCalendars[0].url),
 				this.calendarsStore.scheduleInbox,
-				this.$store.getters.getResolvedTimezone,
+				this.settingsStore.getResolvedTimezone,
 			)
 		},
 		hasAtLeastOneCalendar() {

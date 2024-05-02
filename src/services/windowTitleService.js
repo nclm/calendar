@@ -32,7 +32,14 @@ const originalWindowTitle = document.title
  * @param {VueRouter} router The VueJS Router instance
  */
 export default function(router) {
-	const settingsStore = useSettingsStore()
+	/// TODO MAKE SURE THIS WORKS
+	let settingsStore
+	try {
+		settingsStore = useSettingsStore()
+	} catch (e) {
+		settingsStore = {}
+		return
+	}
 	/**
 	 * Updates the title of the window
 	 *

@@ -54,10 +54,10 @@ export default {
 	computed: {
 		...mapStores(usePrincipalsStore, useImportFilesStore, useCalendarsStore),
 		calendar() {
-			let calendarId = this.$store.state.importFiles.importCalendarRelation[this.file.id]
+			let calendarId = this.importFilesStore.importCalendarRelation[this.file.id]
 			if (!calendarId) {
 				this.setDefaultCalendarId()
-				calendarId = this.$store.state.importFiles.importCalendarRelation[this.file.id]
+				calendarId = this.importFilesStore.importCalendarRelation[this.file.id]
 			}
 
 			if (calendarId === 'new') {

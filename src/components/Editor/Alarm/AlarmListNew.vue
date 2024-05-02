@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 import { getDefaultAlarms } from '../../../defaults/defaultAlarmProvider.js'
 import {
 	getAmountAndUnitForTimedEvents,
@@ -60,8 +60,9 @@ export default {
 		...mapState(useSettingsStore, {
 			locale: 'momentLocale',
 		}),
+		...mapStores(useSettingsStore),
 		currentUserTimezone() {
-			return this.$store.getters.getResolvedTimezone
+			return this.settingsStore.getResolvedTimezone
 		},
 		options() {
 			return getDefaultAlarms(this.isAllDay).map((defaultAlarm) => {

@@ -82,6 +82,7 @@ import { mapStores, mapState } from 'pinia'
 import useSettingsStore from '../store/settings.js'
 import useCalendarsStore from '../store/calendars.js'
 import usePrincipalsStore from '../store/principals.js'
+import useFetchedTimeRangesStore from '../store/fetchedTimeRanges.js'
 
 export default {
 	name: 'Dashboard',
@@ -107,7 +108,7 @@ export default {
 		...mapState(useSettingsStore, {
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),
-		...mapStores(useSettingsStore, useCalendarsStore, usePrincipalsStore),
+		...mapStores(useSettingsStore, useCalendarsStore, usePrincipalsStore, useFetchedTimeRangesStore),
 		/**
 		 * Format loaded events
 		 *
@@ -204,7 +205,7 @@ export default {
 						return []
 					}
 
-					const calendarObjects = this.$store.getters.getCalendarObjectsByTimeRangeId(timeRangeId)
+					const calendarObjects = this.fetchedTimeRangesStore.getCalendarObjectsByTimeRangeId(timeRangeId)
 					return eventSourceFunction(calendarObjects, calendar, from, to, this.timezoneObject)
 				}))
 			}
@@ -233,8 +234,8 @@ export default {
 					subText: this.formatSubtext(event),
 					mainText: event.title,
 					startDate: event.start,
-					calendarColor: this.$store.state.calendars.calendarsById[event.extendedProps.calendarId].color,
-					calendarDisplayName: this.$store.state.calendars.calendarsById[event.extendedProps.calendarId].displayname,
+					calendarColor: this.calendarsStore.calendarsById[event.extendedProps.calendarId].color,
+					calendarDisplayName: this.calendarsStore.calendarsById[event.extendedProps.calendarId].displayname,
 				}))
 		},
 		/**

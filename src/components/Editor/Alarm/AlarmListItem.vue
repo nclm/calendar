@@ -220,7 +220,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(useCalendarObjectInstanceStore),
+		...mapStores(useCalendarObjectInstanceStore, useSettingsStore),
 		...mapState(useSettingsStore, {
 			locale: 'momentLocale',
 			forceEventAlarmType: 'forceEventAlarmType',
@@ -286,7 +286,7 @@ export default {
 			return !this.isRelativeAlarm
 		},
 		currentUserTimezone() {
-			return this.$store.getters.getResolvedTimezone
+			return this.settingsStore.getResolvedTimezone
 		},
 		isAllDay() {
 			return this.calendarObjectInstance.isAllDay

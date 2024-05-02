@@ -39,10 +39,9 @@ const momentFactory = ({ array }) => {
 /**
  * Construct a cmdFormatter that can be used to construct a FullCalendar plugin
  *
- * @param $store
  * @return {function(string, string):string} cmdFormatter function
  */
-const cmdFormatterFactory = ($store) => (cmdStr, arg) => {
+const cmdFormatterFactory = () => (cmdStr, arg) => {
 	// With our specific DateFormattingConfig,
 	// cmdStr will always be a moment parsable string
 	// like LT, etc.
@@ -54,8 +53,8 @@ const cmdFormatterFactory = ($store) => (cmdStr, arg) => {
 
 	// If arg.end is defined, this is a time-range
 	if (arg.end) {
-		const start = momentFactory($store, arg.start).format(cmdStr)
-		const end = momentFactory($store, arg.end).format(cmdStr)
+		const start = momentFactory(arg.start).format(cmdStr)
+		const end = momentFactory(arg.end).format(cmdStr)
 
 		if (start === end) {
 			return start
@@ -64,18 +63,17 @@ const cmdFormatterFactory = ($store) => (cmdStr, arg) => {
 		return start + arg.defaultSeparator + end
 	}
 
-	return momentFactory($store, arg.start).format(cmdStr)
+	return momentFactory(arg.start).format(cmdStr)
 }
 
 /**
  * Construct a moment plugin for FullCalendar using the locale from the given Vuex store
  *
- * @param {object} $store The Vuex store
  * @return {object} The FullCalendar plugin
  */
-export default function momentPluginFactory($store) {
+export default function momentPluginFactory() {
 	return createPlugin({
 		name: '@nextcloud/moment-plugin',
-		cmdFormatter: cmdFormatterFactory($store),
+		cmdFormatter: cmdFormatterFactory(),
 	})
 }

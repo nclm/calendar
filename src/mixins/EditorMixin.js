@@ -70,7 +70,7 @@ export default {
 		}),
 		...mapState(useCalendarsStore, ['initialCalendarsLoaded']),
 		...mapState(useCalendarObjectInstanceStore, ['calendarObject', 'calendarObjectInstance']),
-		...mapStores(useCalendarsStore, usePrincipalsStore, useCalendarObjectsStore, useCalendarObjectInstanceStore),
+		...mapStores(useCalendarsStore, usePrincipalsStore, useCalendarObjectsStore, useCalendarObjectInstanceStore, useSettingsStore),
 		eventComponent() {
 			return this.calendarObjectInstance?.eventComponent
 		},
@@ -402,14 +402,15 @@ export default {
 		 * Closes the editor and returns to normal calendar-view
 		 */
 		closeEditor() {
-			const params = Object.assign({}, this.$store.state.route.params)
-			delete params.object
-			delete params.recurrenceId
-
-			this.$router.push({
-				name: getPrefixedRoute(this.$store.state.route.name, 'CalendarView'),
-				params,
-			})
+			///TODO IMPORTANT
+			// const params = Object.assign({}, this.$store.state.route.params)
+			// delete params.object
+			// delete params.recurrenceId
+			//
+			// this.$router.push({
+			// 	name: getPrefixedRoute(this.$store.state.route.name, 'CalendarView'),
+			// 	params,
+			// })
 
 			this.calendarObjectInstanceStore.isNew = false
 			this.calendarObjectInstanceStore.calendarObject = null
@@ -426,7 +427,7 @@ export default {
 			this.closeEditor()
 		},
 		/**
-		 * Resets the calendar-object back to it's original state and closes the editor
+		 * Resets the calendar-object back to its original state and closes the editor
 		 */
 		async cancel() {
 			if (this.isLoading) {
@@ -687,7 +688,7 @@ export default {
 				const isAllDay = (to.params.allDay === '1')
 				const start = parseInt(to.params.dtstart, 10)
 				const end = parseInt(to.params.dtend, 10)
-				const timezoneId = vm.$store.getters.getResolvedTimezone
+				const timezoneId = this.settingsStore.getResolvedTimezone
 
 				try {
 					await vm.loadingCalendars()
@@ -768,7 +769,7 @@ export default {
 			const isAllDay = (to.params.allDay === '1')
 			const start = to.params.dtstart
 			const end = to.params.dtend
-			const timezoneId = this.$store.getters.getResolvedTimezone
+			const timezoneId = this.settingsStore.getResolvedTimezone
 
 			await this.loadingCalendars()
 			await this.calendarObjectInstanceStore.updateCalendarObjectInstanceForNewEvent({ isAllDay, start, end, timezoneId })

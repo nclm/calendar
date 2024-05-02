@@ -25,7 +25,7 @@
 		<ul class="settings-fieldset-interior">
 			<SettingsImportSection :is-disabled="loadingCalendars" />
 			<ActionCheckbox class="settings-fieldset-interior-item"
-				:checked="calendarsStore.hasBirthdayCalendar"
+				:checked="hasBirthdayCalendar"
 				:disabled="isBirthdayCalendarDisabled"
 				@update:checked="toggleBirthdayEnabled">
 				{{ $t('calendar', 'Enable birthday calendar') }}
@@ -127,9 +127,10 @@ import {
 	generateRemoteUrl,
 	generateUrl,
 } from '@nextcloud/router'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 import useSettingsStore from '../../store/settings.js'
 import useCalendarsStore from '../../store/calendars.js'
+import useImportFilesStore from '../../store/importFiles.js'
 import moment from '@nextcloud/moment'
 import {
 	showSuccess,
@@ -189,21 +190,22 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(useSettingsStore, useCalendarsStore),
+		...mapStores(useSettingsStore, useCalendarsStore, useImportFilesStore),
+		...mapState(useCalendarsStore, ['hasBirthdayCalendar']),
 		isBirthdayCalendarDisabled() {
 			return this.savingBirthdayCalendar || this.loadingCalendars
 		},
 		files() {
-			return this.$store.state.importFiles.importFiles
+			return this.importFilesStore.importFiles
 		},
 		showUploadButton() {
-			return this.$store.state.importState.importState.stage === IMPORT_STAGE_DEFAULT
+			return this.importStateStore.importState.stage === IMPORT_STAGE_DEFAULT
 		},
 		showImportModal() {
-			return this.$store.state.importState.importState.stage === IMPORT_STAGE_PROCESSING
+			return this.importStateStore.importState.stage === IMPORT_STAGE_PROCESSING
 		},
 		showProgressBar() {
-			return this.$store.state.importState.importState.stage === IMPORT_STAGE_IMPORTING
+			return this.importStateStore.importState.stage === IMPORT_STAGE_IMPORTING
 		},
 		settingsTitle() {
 			return this.$t('calendar', 'Calendar settings')

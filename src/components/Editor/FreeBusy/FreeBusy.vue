@@ -131,7 +131,7 @@ export default {
 		plugins() {
 			return [
 				resourceTimelinePlugin,
-				momentPluginFactory(this.$store),
+				momentPluginFactory(),
 				VTimezoneNamedTimezone,
 			]
 		},

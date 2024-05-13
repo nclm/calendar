@@ -273,7 +273,7 @@ export default defineStore('calendarObjects', {
 		 */
 		updateTimeOfNewEvent({ calendarObjectInstance, start, end, timezoneId, isAllDay }) {
 			const calendarObjectInstanceStore = useCalendarObjectInstanceStore()
-			const isDirty = calendarObjectInstance.eventComponent.isDirty()
+			const isDirty = calendarObjectInstanceStore.calendarObjectInstance.eventComponent.isDirty()
 			const startDate = new Date(start * 1000)
 			const endDate = new Date(end * 1000)
 

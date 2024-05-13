@@ -269,7 +269,7 @@
 					:calendar-object-instance="calendarObjectInstance"
 					:is-read-only="isReadOnly" />
 			</div>
-			<SaveButtons v-if="showSaveButtons"
+			<SaveButtons v-if="showSaveButtons"calendarObjectInstance
 				class="app-sidebar-tab__buttons"
 				:can-create-recurrence-exception="canCreateRecurrenceException"
 				:is-new="isNew"
@@ -328,6 +328,7 @@ import getTimezoneManager from '../services/timezoneDataProviderService.js'
 
 import usePrincipalsStore from '../store/principals.js'
 import useSettingsStore from '../store/settings.js'
+import useCalendarObjectInstanceStore from '../store/calendarObjectInstance.js'
 import { mapStores, mapState } from 'pinia'
 import { getClosestCSS3ColorNameForHex, getHexForColorName } from '../utils/color.js'
 
@@ -387,6 +388,7 @@ export default {
 			attachmentsFolder: 'attachmentsFolder',
 			showResources: 'showResources',
 		}),
+		...mapState(useCalendarObjectInstanceStore, ['calendarObjectInstance']),
 		accessClass() {
 			return this.calendarObjectInstance?.accessClass || null
 		},

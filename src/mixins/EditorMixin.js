@@ -403,14 +403,15 @@ export default {
 		 */
 		closeEditor() {
 			///TODO IMPORTANT
-			// const params = Object.assign({}, this.$store.state.route.params)
-			// delete params.object
-			// delete params.recurrenceId
-			//
-			// this.$router.push({
-			// 	name: getPrefixedRoute(this.$store.state.route.name, 'CalendarView'),
-			// 	params,
-			// })
+			const params = Object.assign({}, this.$route.params)
+			debugger
+			delete params.object
+			delete params.recurrenceId
+
+			this.$router.push({
+				name: getPrefixedRoute(this.$store.state.route.name, 'CalendarView'),
+				params,
+			})
 
 			this.calendarObjectInstanceStore.isNew = false
 			this.calendarObjectInstanceStore.calendarObject = null

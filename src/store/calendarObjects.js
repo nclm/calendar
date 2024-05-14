@@ -37,6 +37,7 @@ import useFetchedTimeRangesStore from './fetchedTimeRanges.js'
 import useCalendarsStore from './calendars.js'
 import { defineStore } from 'pinia'
 import useCalendarObjectInstanceStore from './calendarObjectInstance.js'
+import Vue from 'vue'
 
 export default defineStore('calendarObjects', {
 	state: () => {
@@ -208,7 +209,8 @@ export default defineStore('calendarObjects', {
 				await calendarObject.dav.delete()
 			}
 
-			this.calendarObjects[calendarObject.id] = undefined
+			///TODO this.calendarObjects[calendarObject.id] = undefined
+			Vue.delete(state.calendarObjects, calendarObject.id)
 			this.deleteCalendarObjectFromCalendarMutation({
 				calendar: {
 					id: calendarObject.calendarId,
@@ -323,7 +325,8 @@ export default defineStore('calendarObjects', {
 		appendCalendarObjectsMutation({ calendarObjects = [] }) {
 			for (const calendarObject of calendarObjects) {
 				if (!this.calendarObjects[calendarObject.id]) {
-					this.calendarObjects[calendarObject.id] = calendarObject
+					///TODO this.calendarObjects[calendarObject.id] = calendarObject
+					Vue.set(this.calendarObjects, calendarObject.id, calendarObject)
 				}
 			}
 		},
@@ -336,7 +339,8 @@ export default defineStore('calendarObjects', {
 		 */
 		appendCalendarObjectMutation({ calendarObject }) {
 			if (!this.calendarObjects[calendarObject.id]) {
-				this.calendarObjects[calendarObject.id] = calendarObject
+				///TODO this.calendarObjects[calendarObject.id] = calendarObject
+				Vue.set(this.calendarObjects, calendarObject.id, calendarObject)
 			}
 		},
 

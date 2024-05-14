@@ -81,9 +81,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 		loadingKeyCalendars() {
 			return this._uid + '-loading-placeholder-calendars'
 		},

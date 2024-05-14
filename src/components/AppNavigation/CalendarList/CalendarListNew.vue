@@ -178,9 +178,7 @@ export default {
 			canSubscribeLink: 'canSubscribeLink',
 			hasPublicCalendars: store => Boolean(store.publicCalendars),
 		}),
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 	},
 	watch: {
 		isOpen() {

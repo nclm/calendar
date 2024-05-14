@@ -402,14 +402,10 @@ export default {
 		 * Closes the editor and returns to normal calendar-view
 		 */
 		closeEditor() {
-			///TODO IMPORTANT
 			const params = Object.assign({}, this.$route.params)
-			debugger
-			delete params.object
-			delete params.recurrenceId
 
 			this.$router.push({
-				name: getPrefixedRoute(this.$store.state.route.name, 'CalendarView'),
+				name: getPrefixedRoute(this.$route.name, 'CalendarView'),
 				params,
 			})
 
@@ -614,7 +610,7 @@ export default {
 		 * @param {Date} endDate New end date
 		 */
 		updateEndDate(endDate) {
-			this.calendarObjectInstanceStore.changeEndDate({
+			this.calendarObjectInstanceStore.changeEndDateMutation({
 				calendarObjectInstance: this.calendarObjectInstance,
 				endDate,
 			})

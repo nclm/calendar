@@ -56,9 +56,7 @@ export default {
 			// for calendars where only one calendar can be selected, disable if there are < 2
 			return this.multiple ? this.calendars.length < 1 : this.calendars.length < 2
 		},
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 	},
 	methods: {
 		/**

@@ -214,9 +214,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 		isPublished() {
 			return this.calendar.publishURL !== null
 		},

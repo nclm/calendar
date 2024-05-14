@@ -58,6 +58,7 @@ import usePrincipalsStore from './principals.js'
 import useCalendarObjectsStore from './calendarObjects.js'
 
 import { defineStore } from 'pinia'
+import Vue from 'vue'
 
 export default defineStore('calendars', {
 	state: () => {
@@ -374,7 +375,8 @@ export default defineStore('calendars', {
 			await calendar.dav.delete()
 
 			this.calendars.splice(this.calendars.indexOf(calendar), 1)
-			this.calendarsById.delete(calendar.id)
+			///TODO this.calendarsById.delete(calendar.id)
+			Vue.delete(this.calendarsById, calendar.id)
 		},
 
 		/**
@@ -393,7 +395,8 @@ export default defineStore('calendars', {
 		},
 
 		deleteCalendarAfterTimeout({ calendar, countdown = 7 }) {
-			this.calendarsById[calendar.id].countdown = countdown
+			///TODO this.calendarsById[calendar.id].countdown = countdown
+			Vue.set(this.calendarsById, calendar.id, countdown)
 
 			const deleteInterval = setInterval(() => {
 				countdown--
@@ -402,7 +405,8 @@ export default defineStore('calendars', {
 					countdown = 0
 				}
 
-				this.calendarsById[calendar.id].countdown = countdown
+				///TODO this.calendarsById[calendar.id].countdown = countdown
+				Vue.set(this.calendarsById, calendar.id, countdown)
 			}, 1000)
 			const deleteTimeout = setTimeout(async () => {
 				try {
@@ -756,6 +760,7 @@ export default defineStore('calendars', {
 					const calendar = mapDavCollectionToCalendar(response, principalsStore.getCurrentUserPrincipal)
 					this.addCalendarMutation({ calendar })
 					importFilesStore.importCalendarRelation[file.id] = calendar.id
+					importFilesStore.importCalendarRelation = JSON.parse(JSON.stringify(importFilesStore.importCalendarRelation)) ///TODO remove with vue 3
 				}
 			}
 

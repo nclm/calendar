@@ -31,6 +31,7 @@ import {
 	mapDavToPrincipal,
 } from '../models/principal.js'
 import { defineStore } from 'pinia'
+import Vue from 'vue'
 
 export default defineStore('principals', {
 	state: () => {
@@ -128,7 +129,8 @@ export default defineStore('principals', {
 			}
 
 			this.principals.push(object)
-			this.principalsById[object.id] = object
+			///TODO this.principalsById[object.id] = object
+			Vue.set(this.principalsById, object.id, object)
 		},
 	},
 })

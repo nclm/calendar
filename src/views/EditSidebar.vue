@@ -331,6 +331,7 @@ import useSettingsStore from '../store/settings.js'
 import useCalendarObjectInstanceStore from '../store/calendarObjectInstance.js'
 import { mapStores, mapState } from 'pinia'
 import { getClosestCSS3ColorNameForHex, getHexForColorName } from '../utils/color.js'
+import Vue from 'vue'
 
 export default {
 	name: 'EditSidebar',
@@ -503,7 +504,8 @@ export default {
 		updateColor(customColor) {
 			if (customColor === null) {
 				this.calendarObjectInstance.eventComponent.deleteAllProperties('COLOR')
-				this.calendarObjectInstance.customColor = null
+				///TODO this.calendarObjectInstance.customColor = null
+				Vue.set(this.calendarObjectInstance, customColor, null)
 				return
 			}
 
@@ -520,7 +522,8 @@ export default {
 			}
 
 			this.calendarObjectInstance.eventComponent.color = cssColorName
-			this.calendarObjectInstance.customColor = hexColorOfCssName
+			///TODO this.calendarObjectInstance.customColor = hexColorOfCssName
+			Vue.set(this.calendarObjectInstance, customColor, hexColorOfCssName)
 		},
 		/**
 		 * Checks is the calendar event has attendees, but organizer or not

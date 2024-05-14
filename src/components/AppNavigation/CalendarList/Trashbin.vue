@@ -148,9 +148,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 		...mapState(useSettingsStore, {
 			timezoneObject: 'getResolvedTimezoneObject',
 		}),

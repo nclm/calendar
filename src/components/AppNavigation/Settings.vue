@@ -282,7 +282,7 @@ export default {
 			// change to loading status
 			this.savingBirthdayCalendar = true
 			try {
-				await this.settingStore.toggleBirthdayCalendarEnabled()
+				await this.settingsStore.toggleBirthdayCalendarEnabled()
 				this.savingBirthdayCalendar = false
 			} catch (error) {
 				console.error(error)

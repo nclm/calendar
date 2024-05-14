@@ -26,6 +26,7 @@
  *
  */
 import { defineStore } from 'pinia'
+import Vue from 'vue'
 
 export default defineStore('importFiles', {
 	state: () => {
@@ -60,16 +61,22 @@ export default defineStore('importFiles', {
 			}
 
 			this.importFiles.push(file)
-			this.importFilesById[file.id] = file
+			this.importFiles = JSON.parse(JSON.stringify(this.importFiles)) ///TODO remove with vue 3
+			///TODO this.importFilesById[file.id] = file
+			Vue.set(this.importFilesById, file.id, file)
 		},
 
 		/**
 		 * Removes all files from state
 		 */
 		removeAllFiles() {
-			this.importFiles = []
-			this.importFilesById = {}
-			this.importCalendarRelation = {}
+			///TODO this.importFiles = []
+			///TODO this.importFilesById = {}
+			///TODO this.importCalendarRelation = {}
+
+			Vue.set(this, 'importFiles', [])
+			Vue.set(this, 'importFilesById', {})
+			Vue.set(this, 'importCalendarRelation', {})
 		},
 	},
 })

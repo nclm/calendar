@@ -22,6 +22,7 @@
  *
  */
 import { defineStore } from 'pinia'
+import Vue from 'vue'
 
 export default defineStore('contacts', {
 	state: () => {
@@ -47,7 +48,8 @@ export default defineStore('contacts', {
 				// share the same email address, we will just follow
 				// first come, first served.
 				if (this.contactByEmail[email] === undefined) {
-					this.contactByEmail[email] = contact
+					///TODO this.contactByEmail[email] = contact
+					Vue.set(this.contactByEmail, email, contact)
 				}
 			}
 		},

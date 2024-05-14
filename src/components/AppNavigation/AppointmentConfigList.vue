@@ -73,7 +73,7 @@ import useAppointmentConfigsStore from '../../store/appointmentConfigs.js'
 import usePrincipalsStore from '../../store/principals.js'
 import useCalendarsStore from '../../store/calendars.js'
 import useSettingsStore from '../../store/settings.js'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 
 export default {
 	name: 'AppointmentConfigList',
@@ -92,11 +92,9 @@ export default {
 	},
 	computed: {
 		...mapStores(useAppointmentConfigsStore, usePrincipalsStore, useCalendarsStore, useSettingsStore),
-		configs() {
-			const appointmentConfigsStore = useAppointmentConfigsStore()
-
-			return appointmentConfigsStore.allConfigs
-		},
+		...mapState(useAppointmentConfigsStore, {
+			configs: (state) => state.allConfigs,
+		}),
 		defaultConfig() {
 			return AppointmentConfig.createDefault(
 				this.calendarUrlToUri(this.calendarsStore.ownSortedCalendars[0].url),
@@ -133,8 +131,7 @@ export default {
 			logger.info('Deleting config', { config })
 
 			try {
-				await this.appointmentConfigsStore.deleteConfig({ config })
-
+				await this.appointmentConfigsStore.deleteConfig(config)
 				logger.info('Config deleted', { config })
 			} catch (error) {
 				logger.error('Deleting appointment config failed', { config })

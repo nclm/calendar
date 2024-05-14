@@ -93,9 +93,7 @@ export default {
 		uid() {
 			return this._uid
 		},
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 	},
 	methods: {
 		/**

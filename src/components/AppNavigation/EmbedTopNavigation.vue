@@ -75,9 +75,7 @@ export default {
 		Download,
 	},
 	computed: {
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 	},
 	methods: {
 		async copySubscriptionLink(calendar) {

@@ -23,6 +23,7 @@
  */
 import { defineStore } from 'pinia'
 import useCalendarObjectsStore from './calendarObjects.js'
+import Vue from 'vue'
 
 export default defineStore('fetchedTimeRanges', {
 	state: () => {
@@ -101,7 +102,8 @@ export default defineStore('fetchedTimeRanges', {
 			}
 
 			this.fetchedTimeRanges.push(fetchedTimeRange)
-			this.fetchedTimeRangesById[fetchedTimeRange.id] = fetchedTimeRange
+			///TODO this.fetchedTimeRangesById[fetchedTimeRange.id] = fetchedTimeRange
+			Vue.set(this.fetchedTimeRangesById, fetchedTimeRange.id, fetchedTimeRange)
 		},
 
 		/**
@@ -116,7 +118,8 @@ export default defineStore('fetchedTimeRanges', {
 
 			if (index !== -1) {
 				this.fetchedTimeRanges.splice(index, 1)
-				this.fetchedTimeRangesById.splice(timeRangeId, 1)
+				///TODO this.fetchedTimeRangesById.splice(timeRangeId, 1)
+				Vue.delete(this.fetchedTimeRangesById, timeRangeId)
 			}
 		},
 

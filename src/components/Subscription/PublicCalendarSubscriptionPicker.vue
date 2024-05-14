@@ -144,9 +144,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores({
-			useCalendarsStore,
-		}),
+		...mapStores(useCalendarsStore),
 	},
 	async mounted() {
 		this.subscriptions = await findAllSubscriptions()

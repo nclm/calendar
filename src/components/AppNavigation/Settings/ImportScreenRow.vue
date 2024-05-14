@@ -95,9 +95,11 @@ export default {
 	methods: {
 		selectCalendar(newCalendar) {
 			this.importFilesStore.importCalendarRelation[this.file.id] = newCalendar.id
+			this.importFilesStore.importCalendarRelation = JSON.parse(JSON.stringify(this.importFilesStore.importCalendarRelation)) ///TODO remove with vue 3
 		},
 		setDefaultCalendarId() {
 			this.importFilesStore.importCalendarRelation[this.file.id] = this.calendars[0].id
+			this.importFilesStore.importCalendarRelation = JSON.parse(JSON.stringify(this.importFilesStore.importCalendarRelation)) ///TODO remove with vue 3
 		},
 	},
 }

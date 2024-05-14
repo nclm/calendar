@@ -312,10 +312,10 @@ export default {
 			try {
 				if (this.isNew) {
 					logger.info('Creating new config', { config })
-					this.editing = await this.apointmentConfigStore.createConfig({ config })
+					this.editing = await this.appointmentConfigsStore.createConfig({ config })
 				} else {
 					logger.info('Saving config', { config })
-					this.editing = await this.apointmentConfigStore.updateConfig({ config })
+					this.editing = await this.appointmentConfigsStore.updateConfig({ config })
 				}
 				this.showConfirmation = true
 			} catch (error) {

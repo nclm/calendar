@@ -426,7 +426,6 @@ export default defineStore('calendars', {
 		},
 
 		cancelCalendarDeletion({ calendar }) {
-			debugger
 			if (calendar.deleteInterval) clearInterval(calendar.deleteInterval)
 			if (calendar.deleteTimeout) clearTimeout(calendar.deleteTimeout)
 

@@ -133,7 +133,10 @@ export default {
 				return undefined
 			}
 
-			return this.calendarsStore.getCalendarById(id)
+			const foundCalendar = this.calendarsStore.getCalendarById(id)
+			this.calendarColor = foundCalendar.color
+			this.calendarName = foundCalendar.displayName
+			return foundCalendar
 		},
 
 		/**

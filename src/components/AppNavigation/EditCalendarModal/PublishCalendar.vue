@@ -272,6 +272,7 @@ export default {
 
 			// copy link for calendar to clipboard
 			try {
+				debugger
 				await navigator.clipboard.writeText(url)
 				showSuccess(this.$t('calendar', 'Calendar link copied to clipboard.'))
 			} catch (error) {

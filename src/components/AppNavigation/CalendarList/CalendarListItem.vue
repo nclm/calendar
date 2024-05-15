@@ -242,7 +242,7 @@ export default {
 		 * Open the calendar modal for this calendar item.
 		 */
 		showEditModal() {
-			this.calendarsStore.editModal = this.calendar.id
+			this.calendarsStore.editCalendarModal = { calendarId: this.calendar.id }
 		},
 	},
 }

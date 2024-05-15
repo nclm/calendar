@@ -66,6 +66,7 @@ import debounce from 'debounce'
 import { getYYYYMMDDFromFirstdayParam } from '../utils/date.js'
 import useCalendarsStore from '../store/calendars.js'
 import useSettingsStore from '../store/settings.js'
+import useCalendarObjectsStore from '../store/calendarObjects.js'
 import { mapStores, mapState } from 'pinia'
 
 export default {
@@ -89,7 +90,7 @@ export default {
 		}
 	},
 	computed: {
-		...mapStores(useCalendarsStore, useSettingsStore),
+		...mapStores(useCalendarsStore, useSettingsStore, useCalendarObjectsStore),
 		...mapState(useSettingsStore, {
 			locale: 'momentLocale',
 			timezoneId: 'getResolvedTimezone',
@@ -102,8 +103,8 @@ export default {
 			'slotDuration',
 			'showTasks',
 			'timezone',
-			'modificationCount',
 		]),
+		...mapState(useCalendarObjectsStore, ['modificationCount']),
 		options() {
 			return {
 				// Initialization:
@@ -180,6 +181,7 @@ export default {
 	},
 	watch: {
 		modificationCount: debounce(function() {
+			console.log('Modification count changed, refetching events')
 			const calendarApi = this.$refs.fullCalendar.getApi()
 			calendarApi.refetchEvents()
 		}, 50),

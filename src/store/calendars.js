@@ -328,9 +328,10 @@ export default defineStore('calendars', {
 		 */
 		async appendCalendar({ displayName, color, order, components = ['VEVENT'], timezone = null }) {
 			const principalsStore = usePrincipalsStore()
+			const settingsStore = useSettingsStore()
 
 			if (timezone === null) {
-				timezone = this.getResolvedTimezone
+				timezone = settingsStore.getResolvedTimezone
 			}
 
 			let timezoneIcs = null
@@ -396,7 +397,7 @@ export default defineStore('calendars', {
 
 		deleteCalendarAfterTimeout({ calendar, countdown = 7 }) {
 			///TODO this.calendarsById[calendar.id].countdown = countdown
-			Vue.set(this.calendarsById, calendar.id, countdown)
+			Vue.set(this.calendarsById[calendar.id], 'countdown', countdown)
 
 			const deleteInterval = setInterval(() => {
 				countdown--
@@ -406,7 +407,7 @@ export default defineStore('calendars', {
 				}
 
 				///TODO this.calendarsById[calendar.id].countdown = countdown
-				Vue.set(this.calendarsById, calendar.id, countdown)
+				Vue.set(this.calendarsById[calendar.id], 'countdown', countdown)
 			}, 1000)
 			const deleteTimeout = setTimeout(async () => {
 				try {
@@ -418,11 +419,14 @@ export default defineStore('calendars', {
 					clearInterval(deleteInterval)
 				}
 			}, 7000)
-			this.calendarsById[calendar.id].deleteInterval = deleteInterval
-			this.calendarsById[calendar.id].deleteTimeout = deleteTimeout
+			///TODO this.calendarsById[calendar.id].deleteInterval = deleteInterval
+			///TODO this.calendarsById[calendar.id].deleteTimeout = deleteTimeout
+			Vue.set(this.calendarsById[calendar.id], 'deleteInterval', deleteInterval)
+			Vue.set(this.calendarsById[calendar.id], 'deleteTimeout', deleteTimeout)
 		},
 
 		cancelCalendarDeletion({ calendar }) {
+			debugger
 			if (calendar.deleteInterval) clearInterval(calendar.deleteInterval)
 			if (calendar.deleteTimeout) clearTimeout(calendar.deleteTimeout)
 
@@ -675,6 +679,7 @@ export default defineStore('calendars', {
 			})
 
 			this.calendarsById[calendar.id].loading = false
+			console.log('fetched', fetchedTimeRangesStore.lastTimeRangeInsertId)
 			return fetchedTimeRangesStore.lastTimeRangeInsertId
 		},
 
@@ -850,11 +855,14 @@ export default defineStore('calendars', {
 		 */
 		addCalendarMutation({ calendar }) {
 			const object = getDefaultCalendarObject(calendar)
-
 			if (!this.calendars.some(existing => existing.id === object.id)) {
 				this.calendars.push(object)
+				Vue.set(this.calendars, 0, this.calendars[0]) ///TODO remove with vue 3
 			}
-			this.calendarsById[object.id] = object
+			///TODO this.calendarsById[object.id] = object
+			Vue.set(this.calendarsById, object.id, object)
+
+			console.log('updated lists', this.calendars, this.calendarsById)
 		},
 
 		/**
@@ -865,7 +873,7 @@ export default defineStore('calendars', {
 		 * @param {number} data.fetchedTimeRangeId The time-range-id to remove
 		 */
 		deleteFetchedTimeRangeFromCalendarMutation({ calendar, fetchedTimeRangeId }) {
-			const index = this.calendarsById[calendar.id].fetchedTimeRanges.indexOf(fetchedTimeRangeId)
+			const index = this.calendarsById[calendar.id]?.fetchedTimeRanges.indexOf(fetchedTimeRangeId)
 
 			if (index !== -1) {
 				this.calendarsById[calendar.id].fetchedTimeRanges.slice(index, 1)

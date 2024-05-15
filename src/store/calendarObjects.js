@@ -191,6 +191,7 @@ export default defineStore('calendarObjects', {
 				calendarId: calendar.id,
 				calendarObjectId: calendarObject.id,
 			})
+			console.log('Increase modification count in calendarObjects')
 			this.modificationCount++
 		},
 

@@ -224,7 +224,7 @@ export default {
 			margin-left: -10px;
 			margin-right: 10px;
 		}
-	}
+	}aut
 }
 
 .attachments-list-item {

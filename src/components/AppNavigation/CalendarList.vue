@@ -51,7 +51,7 @@ import draggable from 'vuedraggable'
 import debounce from 'debounce'
 import { showError } from '@nextcloud/dialogs'
 import pLimit from 'p-limit'
-import { mapStores } from 'pinia'
+import { mapStores, mapState } from 'pinia'
 import useCalendarsStore from '../../store/calendars.js'
 
 const limit = pLimit(1)
@@ -82,6 +82,9 @@ export default {
 	},
 	computed: {
 		...mapStores(useCalendarsStore),
+		...mapState(useCalendarsStore, {
+			serverCalendars: 'sortedCalendarsSubscriptions',
+		}),
 		loadingKeyCalendars() {
 			return this._uid + '-loading-placeholder-calendars'
 		},

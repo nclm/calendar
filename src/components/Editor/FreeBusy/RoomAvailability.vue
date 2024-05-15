@@ -5,17 +5,23 @@
 		<div class="modal__content__header">
 			<h2>{{ t('calendar', 'Find a room') }}</h2>
 			<div v-for="room in rooms" :key="room.id">
-				<p>{{ room.name }}</p>
+				<p>{{ room.displayName }}</p>
+			</div>
+			<div class="busy_button">
+				<NcButton @click="findRoomAvailiability">
+					{{ t('calendar',' Check room availability') }}
+				</NcButton>
 			</div>
 		</div>
 	</NcModal>
 </template>
 <script>
-import { NcModal } from '@nextcloud/vue'
+import { NcModal, NcButton } from '@nextcloud/vue'
 export default {
 	name: 'RoomAvailability',
 	components: {
 		NcModal,
+		NcButton,
 	},
 	data() {
 		return {
@@ -30,6 +36,9 @@ export default {
 	methods: {
 		closeRoomAvailability() {
 			this.showRoomAvailabilityModel = false
+		},
+		findRoomAvailiability() {
+			//
 		},
 	},
 }
